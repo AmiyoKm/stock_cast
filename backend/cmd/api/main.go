@@ -73,7 +73,7 @@ func main() {
 	logger.Info("DB connection pool established")
 
 	store := store.NewStorage(db)
-	app := &Application{
+	app := &application{
 		cfg:    config,
 		logger: logger,
 		store:  store,

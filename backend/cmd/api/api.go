@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"stockcast/internal/store"
+	"sync"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -11,10 +12,11 @@ import (
 	"go.uber.org/zap"
 )
 
-type Application struct {
+type application struct {
 	cfg    Config
 	logger *zap.SugaredLogger
 	store  store.Storage
+	wg     sync.WaitGroup
 }
 
 type Config struct {
@@ -53,7 +55,7 @@ type MailConfig struct {
 	exp       time.Duration
 }
 
-func (app *Application) mount() http.Handler {
+func (app *application) mount() http.Handler {
 	r := chi.NewRouter()
 	r.Use(cors.Handler(cors.Options{
 		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
@@ -72,14 +74,17 @@ func (app *Application) mount() http.Handler {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(time.Second * 60))
 
-	r.Route("/api/v1", func(r chi.Router) {
-
+	r.Route("/v1", func(r chi.Router) {
+		r.Route("/stocks", func(r chi.Router) {
+			r.Get("/", app.getStocks)
+			r.Get("/{tradingCodeID}", app.getStockByID)
+		})
 	})
 
 	return r
 }
 
-func (app *Application) run(mux http.Handler) error {
+func (app *application) run(mux http.Handler) error {
 	server := http.Server{
 		Addr:    app.cfg.addr,
 		Handler: mux,
