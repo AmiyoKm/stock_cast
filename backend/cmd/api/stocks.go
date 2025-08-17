@@ -23,7 +23,7 @@ func (app *application) getStocks(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (app *application) getStockByID(w http.ResponseWriter, r *http.Request) {
+func (app *application) getHistoryOfStockByID(w http.ResponseWriter, r *http.Request) {
 	tradingCodeID := chi.URLParam(r, "tradingCodeID")
 	var input struct {
 		Start string
@@ -45,6 +45,24 @@ func (app *application) getStockByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := envelope{"stocks": stocks}
+	if err := app.writeJSON(w, http.StatusOK, data, nil); err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+}
+
+func (app *application) getStockByID(w http.ResponseWriter, r *http.Request) {
+	tradingCodeID := chi.URLParam(r, "tradingCodeID")
+	app.logger.Info("working 1")
+
+	ctx := r.Context()
+	stock, err := app.store.Stocks.GetCurrentByID(ctx, tradingCodeID)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	data := envelope{"stock": stock}
 	if err := app.writeJSON(w, http.StatusOK, data, nil); err != nil {
 		app.serverErrorResponse(w, r, err)
 		return

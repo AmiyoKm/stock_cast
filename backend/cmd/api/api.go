@@ -78,6 +78,7 @@ func (app *application) mount() http.Handler {
 		r.Route("/stocks", func(r chi.Router) {
 			r.Get("/", app.getStocks)
 			r.Get("/{tradingCodeID}", app.getStockByID)
+			r.Get("/{tradingCodeID}/history", app.getHistoryOfStockByID)
 		})
 	})
 

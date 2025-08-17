@@ -18,6 +18,7 @@ type Storage struct {
 	Stocks interface {
 		Get(ctx context.Context) ([]*Stock, error)
 		GetByID(ctx context.Context, tradingCode string, start time.Time, end time.Time) ([]*Stock, error)
+		GetCurrentByID(ctx context.Context, tradingCode string) (*Stock,error)
 	}
 }
 
