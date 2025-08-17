@@ -8,6 +8,7 @@ import (
 func (app *application) errorResponse(w http.ResponseWriter, r *http.Request, status int, message any) {
 	env := envelope{"error": message}
 
+	app.logger.Errorf("error from : %s , method: %s , message : %v", r.URL, r.Method, message)
 	err := app.writeJSON(w, status, env, nil)
 	if err != nil {
 		w.WriteHeader(500)
