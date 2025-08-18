@@ -34,7 +34,7 @@ func (app *application) getHistoryOfStockByID(w http.ResponseWriter, r *http.Req
 	input.Start = app.readString(qs, "start", "")
 	input.End = app.readString(qs, "end", "")
 
-	start := app.parseDate(input.Start, time.Now().AddDate(0, 0, -7))
+	start := app.parseDate(input.Start, time.Now().AddDate(0, -2, 0))
 	end := app.parseDate(input.End, time.Now())
 
 	ctx := r.Context()
@@ -53,7 +53,6 @@ func (app *application) getHistoryOfStockByID(w http.ResponseWriter, r *http.Req
 
 func (app *application) getStockByID(w http.ResponseWriter, r *http.Request) {
 	tradingCodeID := chi.URLParam(r, "tradingCodeID")
-	app.logger.Info("working 1")
 
 	ctx := r.Context()
 	stock, err := app.store.Stocks.GetCurrentByID(ctx, tradingCodeID)
