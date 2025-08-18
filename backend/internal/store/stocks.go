@@ -7,18 +7,18 @@ import (
 )
 
 type Stock struct {
-	ID          int64
-	Date        time.Time
-	TradingCode string
-	Ltp         float64
-	High        float64
-	Low         float64
-	Openp       float64
-	Closep      float64
-	Ycp         float64
-	Trade       int
-	Value       float64
-	Volume      int
+	ID          int64     `json:"id"`
+	Date        time.Time `json:"date"`
+	TradingCode string    `json:"tradingCode"`
+	Ltp         float64   `json:"ltp"`
+	High        float64   `json:"high"`
+	Low         float64   `json:"low"`
+	Openp       float64   `json:"openp"`
+	Closep      float64   `json:"closep"`
+	Ycp         float64   `json:"ycp"`
+	Trade       int       `json:"trade"`
+	Value       float64   `json:"value"`
+	Volume      int       `json:"volume"`
 }
 
 type StockStore struct {
@@ -68,7 +68,7 @@ func (s *StockStore) GetByID(ctx context.Context, tradingCode string, start time
 	query := `SELECT id, date, trading_code, ltp, high, low, openp, closep, ycp, trade, value, volume
               FROM stock_history
               WHERE trading_code = $1 AND date >= $2 AND date <= $3
-              ORDER BY date DESC`
+              ORDER BY date ASC`
 	rows, err := s.db.QueryContext(ctx, query, tradingCode, start, end)
 	if err != nil {
 		return nil, err
