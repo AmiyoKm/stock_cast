@@ -1,11 +1,14 @@
 "use client"
 
+import { DSEXDataTable } from "@/components/dsex-data-table"
 import { ErrorBoundary, ErrorFallback } from "@/components/error-boundary"
 import { Header } from "@/components/header"
 import { MarketOverviewSkeleton, StockTableSkeleton } from "@/components/loading-skeleton"
 import { MarketOverview } from "@/components/market-overview"
 import { StockGlossary } from "@/components/stock-glossary"
 import { StockTable } from "@/components/stock-table"
+import { Top30StocksTable } from "@/components/top30-stocks-table"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { StockAPI } from "@/lib/api"
 import { transformRawStock } from "@/lib/utils"
 import { calculatePriceChange } from "@/lib/utils/format"
@@ -16,9 +19,9 @@ import { useMemo, useState } from "react"
 export default function HomePage() {
     const router = useRouter()
     const [searchQuery, setSearchQuery] = useState("")
+    const [activeTab, setActiveTab] = useState("live")
 
-    // Fetch and transform stocks directly in the query function
-    const { data: stocks = [], isLoading, isError, error } = useQuery({
+    const { data: stocks = [], isLoading, error } = useQuery({
         queryKey: ["stock", "current"],
         queryFn: async () => {
             const res = await StockAPI.getAllStocks()
@@ -108,18 +111,41 @@ export default function HomePage() {
                                 unchanged={marketStats.unchanged}
                             />
 
-                            <StockTable stocks={filteredStocks} onStockClick={handleStockClick} />
+                            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                                <TabsList className="grid w-full grid-cols-3 mb-6">
+                                    <TabsTrigger value="live" className="font-medium">
+                                        Live Market Data
+                                    </TabsTrigger>
+                                    <TabsTrigger value="top30" className="font-medium">
+                                        Top 30 Stocks
+                                    </TabsTrigger>
+                                    <TabsTrigger value="dsex" className="font-medium">
+                                        DSEX Data
+                                    </TabsTrigger>
+                                </TabsList>
 
-                            {filteredStocks.length === 0 && searchQuery && (
-                                <div className="text-center py-12">
-                                    <div className="max-w-md mx-auto">
-                                        <h3 className="font-semibold text-lg mb-2">No stocks found</h3>
-                                        <p className="text-muted-foreground mb-4">
-                                            No stocks found matching "{searchQuery}". Try adjusting your search terms.
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
+                                <TabsContent value="live" className="space-y-4">
+                                    <StockTable stocks={filteredStocks} onStockClick={handleStockClick} />
+                                    {filteredStocks.length === 0 && searchQuery && (
+                                        <div className="text-center py-12">
+                                            <div className="max-w-md mx-auto">
+                                                <h3 className="font-semibold text-lg mb-2">No stocks found</h3>
+                                                <p className="text-muted-foreground mb-4">
+                                                    No stocks found matching "{searchQuery}". Try adjusting your search terms.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </TabsContent>
+
+                                <TabsContent value="top30" className="space-y-4">
+                                    <Top30StocksTable onStockClick={handleStockClick} />
+                                </TabsContent>
+
+                                <TabsContent value="dsex" className="space-y-4">
+                                    <DSEXDataTable onStockClick={handleStockClick} />
+                                </TabsContent>
+                            </Tabs>
 
                             <StockGlossary />
                         </>

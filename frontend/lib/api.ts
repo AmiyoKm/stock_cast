@@ -1,21 +1,22 @@
-import { EnvelopeStock, EnvelopeStocks, RealTimeResponse } from "@/types/api"
-import type { ChartTimeframe, Stock, StockHistoryPoint } from "@/types/stock"
+import type { Stock, StockHistoryPoint, ChartTimeframe } from "@/types/stock"
+import type { RealTimeResponse, EnvelopeStock, EnvelopeStocks } from "@/types/api"
 
 const API_BASE_URL = process.env.NODE_ENV === "development" ? "http://localhost:8080/v1" : "/api/v1"
-const RELTIME_API_BASE_URL = process.env.NODE_ENV === "development" ? "http://localhost:4000/v1/dse" : "/api/v1"
-
+const REALTIME_API_BASE_URL = process.env.NODE_ENV === "development" ? "http://localhost:4000/v1/dse" : "/api/v1/dse"
 
 export class StockAPI {
     private static async fetchAPI<T>(endpoint: string): Promise<T> {
         const response = await fetch(`${API_BASE_URL}${endpoint}`)
+
         if (!response.ok) {
             throw new Error(`API Error: ${response.status} ${response.statusText}`)
         }
+
         return response.json()
     }
 
     private static async fetchRealTimeAPI<T>(endpoint: string): Promise<T> {
-        const response = await fetch(`${RELTIME_API_BASE_URL}${endpoint}`)
+        const response = await fetch(`${REALTIME_API_BASE_URL}${endpoint}`)
         if (!response.ok) {
             throw new Error(`API Error: ${response.status} ${response.statusText}`)
         }
@@ -23,33 +24,32 @@ export class StockAPI {
     }
 
     static async getAllStocks(): Promise<RealTimeResponse> {
-        const res = await this.fetchRealTimeAPI<RealTimeResponse>("/latest")
-        return res
+        return this.fetchRealTimeAPI<RealTimeResponse>("/latest")
     }
-
-
 
     static async getStockByTradingCode(tradingCode: string): Promise<Stock> {
         const res = await this.fetchAPI<EnvelopeStock>(`/stocks/${tradingCode}`)
         return res.stock
     }
 
-    static async getStockHistory(
-        tradingCode: string,
-        start?: string,
-        end?: string
-    ): Promise<StockHistoryPoint[]> {
+    static async getStockHistory(tradingCode: string, start?: string, end?: string): Promise<StockHistoryPoint[]> {
         const params = new URLSearchParams()
         if (start) params.append("start", start)
         if (end) params.append("end", end)
         const query = params.toString() ? `?${params.toString()}` : ""
-        const res = await this.fetchAPI<EnvelopeStocks>(
-            `/stocks/${tradingCode}/history${query}`
-        )
+        const res = await this.fetchAPI<EnvelopeStocks>(`/stocks/${tradingCode}/history${query}`)
         return res.stocks
     }
-}
 
+    static async getTop30Stocks(): Promise<RealTimeResponse> {
+        return this.fetchRealTimeAPI<RealTimeResponse>("/top30")
+    }
+
+    static async getDSEXData(symbol?: string): Promise<RealTimeResponse> {
+        const params = symbol ? `?symbol=${symbol}` : ""
+        return this.fetchRealTimeAPI<RealTimeResponse>(`/dsexdata${params}`)
+    }
+}
 
 export const generateMockHistory = (stock: Stock, days: number): StockHistoryPoint[] => {
     const history: StockHistoryPoint[] = []
