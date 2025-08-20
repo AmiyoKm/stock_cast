@@ -6,7 +6,6 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
 }
 
-
 export function transformRawStock(raw: any): Stock {
     return {
         id: Number(raw["#"] ?? 0),
