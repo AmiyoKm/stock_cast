@@ -28,7 +28,7 @@ type StockStore struct {
 func (s *StockStore) Get(ctx context.Context) ([]*Stock, error) {
 	query := `SELECT id, date, trading_code, ltp, high, low, openp, closep, ycp, trade, value, volume
               FROM stock_history
-              WHERE date = CURRENT_DATE
+              WHERE date = (SELECT MAX(date) FROM stock_history);
 	`
 	rows, err := s.db.QueryContext(ctx, query)
 	if err != nil {
@@ -61,6 +61,7 @@ func (s *StockStore) Get(ctx context.Context) ([]*Stock, error) {
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
+
 	return stocks, nil
 }
 
@@ -106,7 +107,7 @@ func (s *StockStore) GetByID(ctx context.Context, tradingCode string, start time
 func (s *StockStore) GetCurrentByID(ctx context.Context, tradingCode string) (*Stock, error) {
 	query := `SELECT id, date, trading_code, ltp, high, low, openp, closep, ycp, trade, value, volume
               FROM stock_history
-              WHERE trading_code = $1 AND date = CURRENT_DATE
+              WHERE trading_code = $1 AND date = (SELECT MAX(date) FROM stock_history)
             `
 	stock := &Stock{}
 	err := s.db.QueryRowContext(ctx, query, tradingCode).Scan(
