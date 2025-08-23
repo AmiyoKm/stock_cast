@@ -1,7 +1,6 @@
-
-from pydantic import BaseModel
-from datetime import datetime
+from pydantic import BaseModel, Field, validator
 from typing import List, Dict, Any
+from datetime import datetime
 
 
 class Stock(BaseModel):
@@ -20,9 +19,25 @@ class Stock(BaseModel):
 
 
 class StockDataRequest(BaseModel):
-    tradingCode: str
-    nhead: int
-    history: List[Stock]
+    tradingCode: str = Field(..., description="Trading code/symbol of the stock")
+    nhead: int = Field(..., description="Number of days to predict (1, 3, or 7)")
+    history: List[Stock] = Field(
+        ..., description="Historical stock data (at least 60 days)"
+    )
+
+    @validator("nhead")
+    def validate_nhead(cls, v):
+        if v not in [1, 3, 7]:
+            raise ValueError("nhead must be 1, 3, or 7")
+        return v
+
+    @validator("history")
+    def validate_history_length(cls, v):
+        if len(v) < 60:
+            raise ValueError(
+                f"Not enough history data. Need at least 60 days, got {len(v)}"
+            )
+        return v
 
 
 class PredictionResponse(BaseModel):

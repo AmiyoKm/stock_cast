@@ -80,6 +80,9 @@ func (app *application) mount() http.Handler {
 			r.Get("/{tradingCodeID}", app.getStockByID)
 			r.Get("/{tradingCodeID}/history", app.getHistoryOfStockByID)
 		})
+		r.Route("/predict", func(r chi.Router) {
+			r.Post("/", app.getPredictions)
+		})
 	})
 
 	return r
