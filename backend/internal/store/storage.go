@@ -18,13 +18,17 @@ type Storage struct {
 	Stocks interface {
 		Get(ctx context.Context) ([]*Stock, error)
 		GetByID(ctx context.Context, tradingCode string, start time.Time, end time.Time) ([]*Stock, error)
-		GetCurrentByID(ctx context.Context, tradingCode string) (*Stock,error)
+		GetCurrentByID(ctx context.Context, tradingCode string) (*Stock, error)
+	}
+	Predictions interface {
+		GetHistory(ctx context.Context, tradingCode string, start time.Time, end time.Time) ([]*Stock, error)
 	}
 }
 
 func NewStorage(db *sql.DB) Storage {
 	return Storage{
-		Stocks: &StockStore{db},
+		Stocks:      &StockStore{db},
+		Predictions: &predictionStore{db},
 	}
 }
 
