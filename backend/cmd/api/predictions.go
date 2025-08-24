@@ -73,11 +73,13 @@ func (app *application) getPredictions(w http.ResponseWriter, r *http.Request) {
 		app.errorResponse(w, r, resp.StatusCode, string(body))
 		return
 	}
+
 	var predictionResp predictionResponse
 	if err := json.NewDecoder(resp.Body).Decode(&predictionResp); err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
+
 	if err := app.writeJSON(w, http.StatusOK, envelope{"prediction": predictionResp}, nil); err != nil {
 		app.serverErrorResponse(w, r, err)
 		return

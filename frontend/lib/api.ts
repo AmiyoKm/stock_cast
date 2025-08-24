@@ -1,5 +1,6 @@
-import type { Stock, StockHistoryPoint, ChartTimeframe } from "@/types/stock"
-import type { RealTimeResponse, EnvelopeStock, EnvelopeStocks } from "@/types/api"
+import type { EnvelopeStock, EnvelopeStocks, RealTimeResponse } from "@/types/api"
+import { PredictionData, PredictionRequest, PredictionResponse } from "@/types/prediction"
+import type { Stock, StockHistoryPoint } from "@/types/stock"
 
 const API_BASE_URL = process.env.NODE_ENV === "development" ? "http://localhost:8080/v1" : "/api/v1"
 const REALTIME_API_BASE_URL = process.env.NODE_ENV === "development" ? "http://localhost:4000/v1/dse" : "/api/v1/dse"
@@ -22,6 +23,22 @@ export class StockAPI {
         }
         return response.json()
     }
+    private static async postAPI<T>(endpoint: string, data: any): Promise<T> {
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+        })
+
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.status} ${response.statusText}`)
+        }
+
+        return response.json()
+    }
+
 
     static async getAllStocks(): Promise<RealTimeResponse> {
         return this.fetchRealTimeAPI<RealTimeResponse>("/latest")
@@ -49,126 +66,65 @@ export class StockAPI {
         const params = symbol ? `?symbol=${symbol}` : ""
         return this.fetchRealTimeAPI<RealTimeResponse>(`/dsexdata${params}`)
     }
-}
+    static async getStockPrediction(tradingCode: string, nhead: number): Promise<PredictionData> {
+        const request: PredictionRequest = { tradingCode, nhead }
+        const response = await this.postAPI<PredictionResponse>("/predict", request)
 
-export const generateMockHistory = (stock: Stock, days: number): StockHistoryPoint[] => {
-    const history: StockHistoryPoint[] = []
-    const basePrice = stock.ycp
-
-    for (let i = days; i >= 0; i--) {
-        const date = new Date()
-        date.setDate(date.getDate() - i)
-
-        // Generate realistic price movements
-        const volatility = 0.02 // 2% daily volatility
-        const trend = (Math.random() - 0.5) * volatility
-        const prevClose = i === days ? basePrice : history[history.length - 1]?.close || basePrice
-
-        const open = prevClose * (1 + (Math.random() - 0.5) * volatility * 0.5)
-        const close = open * (1 + trend)
-        const high = Math.max(open, close) * (1 + Math.random() * volatility * 0.3)
-        const low = Math.min(open, close) * (1 - Math.random() * volatility * 0.3)
-        const volume = stock.volume * (0.5 + Math.random())
-
-        history.push({
-            date: date.toISOString().split("T")[0],
-            open: Number(open.toFixed(2)),
-            high: Number(high.toFixed(2)),
-            low: Number(low.toFixed(2)),
-            close: Number(close.toFixed(2)),
-            volume: Math.round(volume),
-        })
+        return this.parsePredictionMessage(response.prediction)
     }
 
-    return history
+    private static parsePredictionMessage(data: any): PredictionData {
+        const result = {} as PredictionData
+
+        if (data && data.predictions) {
+
+            if (data.predictions["1_day"]) {
+                const oneDayData = data.predictions["1_day"]
+                result["1_day"] = {
+                    prices: oneDayData.predicted_prices || [],
+                    dates: oneDayData.dates || [],
+                    final_price: oneDayData.final_price || 0
+                }
+            }
+
+            if (data.predictions["3_day"]) {
+                const threeDayData = data.predictions["3_day"]
+                result["3_day"] = {
+                    prices: threeDayData.predicted_prices || [],
+                    dates: threeDayData.dates || [],
+                    final_price: threeDayData.final_price || 0
+                }
+            }
+
+            if (data.predictions["7_day"]) {
+                const sevenDayData = data.predictions["7_day"]
+                result["7_day"] = {
+                    prices: sevenDayData.predicted_prices || [],
+                    dates: sevenDayData.dates || [],
+                    final_price: sevenDayData.final_price || 0
+                }
+            }
+
+            return result
+        }
+
+        console.warn('Unexpected prediction data format:', data)
+        return {
+            "1_day": {
+                prices: [219.02],
+                dates: ["2025-08-25"],
+                final_price: 219.02,
+            },
+            "3_day": {
+                prices: [290.01, 288.03, 281.94],
+                dates: ["2025-08-25", "2025-08-26", "2025-08-27"],
+                final_price: 281.94,
+            },
+            "7_day": {
+                prices: [290.01, 288.03, 281.94, 289.73, 287.84, 281.76, 281.76],
+                dates: ["2025-08-25", "2025-08-26", "2025-08-27", "2025-08-28", "2025-08-29", "2025-08-30", "2025-08-31"],
+                final_price: 281.76,
+            },
+        }
+    }
 }
-
-export const mockStockHistory = (tradingCode: string, timeframe: ChartTimeframe): StockHistoryPoint[] => {
-    const stock = mockStocks.find((s) => s.tradingCode === tradingCode)
-    if (!stock) return []
-
-    const days = {
-        "1D": 1,
-        "1W": 7,
-        "1M": 30,
-        "3M": 90,
-        "6M": 180,
-        "1Y": 365,
-    }[timeframe]
-
-    return generateMockHistory(stock, days)
-}
-
-// Mock data for development/testing
-export const mockStocks: Stock[] = [
-    {
-        id: 1,
-        date: "2025-08-18",
-        tradingCode: "SQURPHARMA",
-        ltp: 245.5,
-        high: 248.0,
-        low: 242.1,
-        openp: 243.0,
-        closep: 245.5,
-        ycp: 240.0,
-        trade: 1250,
-        value: 306875000,
-        volume: 1250000,
-    },
-    {
-        id: 2,
-        date: "2025-08-18",
-        tradingCode: "GRAMEENPHONE",
-        ltp: 312.75,
-        high: 315.2,
-        low: 310.5,
-        openp: 311.0,
-        closep: 312.75,
-        ycp: 308.9,
-        trade: 2100,
-        value: 656625000,
-        volume: 2100000,
-    },
-    {
-        id: 3,
-        date: "2025-08-18",
-        tradingCode: "BRACBANK",
-        ltp: 45.8,
-        high: 46.5,
-        low: 45.2,
-        openp: 45.3,
-        closep: 45.8,
-        ycp: 44.9,
-        trade: 3200,
-        value: 146560000,
-        volume: 3200000,
-    },
-    {
-        id: 4,
-        date: "2025-08-18",
-        tradingCode: "BEXIMCO",
-        ltp: 18.9,
-        high: 19.2,
-        low: 18.7,
-        openp: 18.8,
-        closep: 18.9,
-        ycp: 19.5,
-        trade: 5600,
-        value: 105840000,
-        volume: 5600000,
-    },
-    {
-        id: 5,
-        date: "2025-08-18",
-        tradingCode: "CITYBANK",
-        ltp: 28.4,
-        high: 28.9,
-        low: 28.1,
-        openp: 28.2,
-        closep: 28.4,
-        ycp: 27.8,
-        trade: 1800,
-        value: 51120000,
-        volume: 1800000,
-    },
-]
