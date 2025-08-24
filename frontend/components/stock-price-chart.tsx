@@ -54,8 +54,6 @@ export function StockPriceChart({ tradingCode, currentPrice, previousClose }: St
         }),
     }))
 
-    console.log("[v0] Chart data", chartData);
-
 
     if (!chartData || chartData.length === 0) {
         return (

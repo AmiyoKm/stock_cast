@@ -5,6 +5,7 @@ import { Header } from "@/components/header"
 import { StockDetailSkeleton } from "@/components/loading-skeleton"
 import { StockDetailCard } from "@/components/stock-detail-card"
 import { StockMetrics } from "@/components/stock-metrics"
+import { StockPrediction } from "@/components/stock-prediction"
 import { StockPriceChart } from "@/components/stock-price-chart"
 import { Button } from "@/components/ui/button"
 import { VolumeChart } from "@/components/volume-chart"
@@ -95,6 +96,7 @@ export default function StockDetailPage() {
                     <div className="grid gap-6 lg:grid-cols-3">
                         <div className="lg:col-span-2 space-y-6">
                             <StockDetailCard stock={stock} />
+                            <StockPrediction tradingCode={stock.tradingCode} currentPrice={stock.ltp} />
                             <StockPriceChart tradingCode={stock.tradingCode} currentPrice={stock.ltp} previousClose={stock.ycp} />
                             <VolumeChart tradingCode={stock.tradingCode} timeframe="1M" />
                         </div>

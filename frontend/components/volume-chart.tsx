@@ -28,7 +28,6 @@ export function VolumeChart({ tradingCode, timeframe }: VolumeChartProps) {
         }),
     }))
 
-    console.log("chartData @@@@", chartData);
 
 
     const CustomTooltip = ({ active, payload }: any) => {
