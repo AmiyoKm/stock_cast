@@ -21,7 +21,8 @@ export default function HomePage() {
     const [searchQuery, setSearchQuery] = useState("")
     const [activeTab, setActiveTab] = useState("live")
 
-    const { data: stocks = [], isLoading, error } = useQuery({
+    // Fetch all three data sources at once
+    const { data: stocks = [], isLoading: isLoadingLive, error: liveError } = useQuery({
         queryKey: ["stock", "current"],
         queryFn: async () => {
             const res = await StockAPI.getAllStocks()
@@ -31,6 +32,32 @@ export default function HomePage() {
             return []
         },
     })
+
+    const { data: top30Stocks = [], isLoading: isLoadingTop30, error: top30Error } = useQuery({
+        queryKey: ["stocks", "top30"],
+        queryFn: async () => {
+            const res = await StockAPI.getTop30Stocks()
+            if (res?.success && Array.isArray(res.data)) {
+                return res.data.map(transformRawStock)
+            }
+            return []
+        },
+    })
+
+    const { data: dsexStocks = [], isLoading: isLoadingDSEX, error: dsexError } = useQuery({
+        queryKey: ["stocks", "dsex"],
+        queryFn: async () => {
+            const res = await StockAPI.getDSEXData()
+            if (res?.success && Array.isArray(res.data)) {
+                return res.data.map(transformRawStock)
+            }
+            return []
+        },
+    })
+
+    // Combine loading states and errors
+    const isLoading = isLoadingLive || isLoadingTop30 || isLoadingDSEX
+    const error = liveError || top30Error || dsexError
 
     // Filter stocks using useMemo for performance and simplicity
     const filteredStocks = useMemo(() => {
@@ -139,11 +166,19 @@ export default function HomePage() {
                                 </TabsContent>
 
                                 <TabsContent value="top30" className="space-y-4">
-                                    <Top30StocksTable onStockClick={handleStockClick} />
+                                    <Top30StocksTable
+                                        onStockClick={handleStockClick}
+                                        searchQuery={searchQuery}
+                                        stocks={top30Stocks}
+                                    />
                                 </TabsContent>
 
                                 <TabsContent value="dsex" className="space-y-4">
-                                    <DSEXDataTable onStockClick={handleStockClick} />
+                                    <DSEXDataTable
+                                        onStockClick={handleStockClick}
+                                        searchQuery={searchQuery}
+                                        stocks={dsexStocks}
+                                    />
                                 </TabsContent>
                             </Tabs>
 
