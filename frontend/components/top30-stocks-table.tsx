@@ -3,10 +3,11 @@
 import { StockTermTooltip } from "@/components/stock-glossary"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ErrorCard } from "@/components/ui/error-card"
+import { LoadingCard } from "@/components/ui/loading-card"
+import { SortButton } from "@/components/ui/sort-button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useFavorites } from "@/contexts/favorites-context"
-import { StockAPI } from "@/lib/api"
-import { transformRawStock } from "@/lib/utils"
 import {
     calculatePriceChange,
     formatCurrency,
@@ -14,132 +15,60 @@ import {
     formatVolume,
     getPriceChangeColor,
 } from "@/lib/utils/format"
-import { useQuery } from "@tanstack/react-query"
-import { ArrowUpDown, Eye, Heart, TrendingDown, TrendingUp } from "lucide-react"
+import { sortStocks, type SortDirection, type SortField } from "@/lib/utils/sort"
+import { handleFavoriteToggle as toggleFavorite, useTableSort } from "@/lib/utils/table-handlers"
+import type { Stock } from "@/types/stock"
+import { Eye, Heart, TrendingDown, TrendingUp } from "lucide-react"
 import type React from "react"
 import { useState } from "react"
 
 interface Top30StocksTableProps {
     onStockClick?: (tradingCode: string) => void
+    searchQuery?: string
+    stocks?: Stock[] // Properly typed with Stock type
 }
 
-type SortField = "tradingCode" | "ltp" | "change" | "volume" | "value"
-type SortDirection = "asc" | "desc"
-
-export function Top30StocksTable({ onStockClick }: Top30StocksTableProps) {
+export function Top30StocksTable({ onStockClick, searchQuery = "", stocks = [] }: Top30StocksTableProps) {
     const [sortField, setSortField] = useState<SortField>("change")
     const [sortDirection, setSortDirection] = useState<SortDirection>("desc")
     const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites()
 
+    const isLoading = stocks.length === 0
+    const isError = false
 
-    const { data: stocks, isLoading, isError, error } = useQuery({
-        queryKey: ["stocks", "top30"],
-        queryFn: async () => {
-            const res = await StockAPI.getTop30Stocks()
-            if (res?.success && Array.isArray(res.data)) {
-                return res.data.map(transformRawStock)
-            }
-            return []
-        },
-    })
-
-    if (stocks == undefined) {
-        return
+    if (!stocks || stocks.length === 0) {
+        return <LoadingCard title="Top 30 Performers" />
     }
 
-    const handleSort = (field: SortField) => {
-        if (sortField === field) {
-            setSortDirection(sortDirection === "asc" ? "desc" : "asc")
-        } else {
-            setSortField(field)
-            setSortDirection(field === "change" ? "desc" : "asc")
-        }
-    }
-
-    const handleFavoriteToggle = (tradingCode: string, e: React.MouseEvent) => {
-        e.stopPropagation()
-        if (isFavorite(tradingCode)) {
-            removeFromFavorites(tradingCode)
-        } else {
-            addToFavorites(tradingCode)
-        }
-    }
-
-    const sortedStocks = [...stocks].sort((a, b) => {
-        let aValue: number | string
-        let bValue: number | string
-
-        switch (sortField) {
-            case "tradingCode":
-                aValue = a.tradingCode
-                bValue = b.tradingCode
-                break
-            case "ltp":
-                aValue = a.ltp
-                bValue = b.ltp
-                break
-            case "change":
-                aValue = calculatePriceChange(a.ltp, a.ycp).change
-                bValue = calculatePriceChange(b.ltp, b.ycp).change
-                break
-            case "volume":
-                aValue = a.volume
-                bValue = b.volume
-                break
-            case "value":
-                aValue = a.value
-                bValue = b.value
-                break
-            default:
-                aValue = a.tradingCode
-                bValue = b.tradingCode
-        }
-
-        if (typeof aValue === "string" && typeof bValue === "string") {
-            return sortDirection === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue)
-        }
-
-        return sortDirection === "asc" ? (aValue as number) - (bValue as number) : (bValue as number) - (aValue as number)
-    })
-
-    const SortButton = ({ field, children }: { field: SortField; children: React.ReactNode }) => (
-        <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 px-2 font-medium hover:bg-accent transition-colors"
-            onClick={() => handleSort(field)}
-        >
-            {children}
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+    // Use reusable table sort handler with custom default direction
+    const handleSort = useTableSort(
+        sortField,
+        setSortField,
+        sortDirection,
+        setSortDirection,
+        "desc" // Default to descending order for Top30 table
     )
 
+    // Use reusable favorite toggle handler
+    const handleFavoriteToggle = (tradingCode: string, e: React.MouseEvent) => {
+        toggleFavorite(tradingCode, e, isFavorite, addToFavorites, removeFromFavorites)
+    }
+
+    // Filter stocks based on searchQuery
+    const filteredStocks = searchQuery.trim() === ""
+        ? stocks
+        : stocks.filter((stock) =>
+            stock.tradingCode.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+
+    const sortedStocks = sortStocks(filteredStocks, sortField, sortDirection)
+
     if (isLoading) {
-        return (
-            <Card className="overflow-hidden">
-                <CardHeader>
-                    <CardTitle className="font-serif text-xl">Top 30 Performers</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex items-center justify-center py-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                    </div>
-                </CardContent>
-            </Card>
-        )
+        return <LoadingCard title="Top 30 Performers" />
     }
 
     if (isError) {
-        return (
-            <Card className="overflow-hidden">
-                <CardHeader>
-                    <CardTitle className="font-serif text-xl">Top 30 Performers</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="text-center py-8 text-muted-foreground">{error.message}</div>
-                </CardContent>
-            </Card>
-        )
+        return <ErrorCard title="Top 30 Performers" />
     }
 
     return (
@@ -155,34 +84,34 @@ export function Top30StocksTable({ onStockClick }: Top30StocksTableProps) {
                                 <TableHead className="w-[60px]">Rank</TableHead>
                                 <TableHead className="min-w-[140px]">
                                     <StockTermTooltip term="TRADING CODE">
-                                        <SortButton field="tradingCode">Trading Code</SortButton>
+                                        <SortButton field="tradingCode" onClick={handleSort}>Trading Code</SortButton>
                                     </StockTermTooltip>
                                 </TableHead>
                                 <TableHead className="text-right min-w-[100px]">
                                     <StockTermTooltip term="LTP">
                                         <div className="flex justify-end w-full">
-                                            <SortButton field="ltp">LTP</SortButton>
+                                            <SortButton field="ltp" onClick={handleSort}>LTP</SortButton>
                                         </div>
                                     </StockTermTooltip>
                                 </TableHead>
                                 <TableHead className="text-right min-w-[120px]">
                                     <StockTermTooltip term="CHANGE">
                                         <div className="flex justify-end w-full">
-                                            <SortButton field="change">Change</SortButton>
+                                            <SortButton field="change" onClick={handleSort}>Change</SortButton>
                                         </div>
                                     </StockTermTooltip>
                                 </TableHead>
                                 <TableHead className="text-right min-w-[100px] hidden md:table-cell">
                                     <StockTermTooltip term="VOLUME">
                                         <div className="flex justify-end w-full">
-                                            <SortButton field="volume">Volume</SortButton>
+                                            <SortButton field="volume" onClick={handleSort}>Volume</SortButton>
                                         </div>
                                     </StockTermTooltip>
                                 </TableHead>
                                 <TableHead className="text-right min-w-[120px] hidden lg:table-cell">
                                     <StockTermTooltip term="VALUE">
                                         <div className="flex justify-end w-full">
-                                            <SortButton field="value">Value</SortButton>
+                                            <SortButton field="value" onClick={handleSort}>Value</SortButton>
                                         </div>
                                     </StockTermTooltip>
                                 </TableHead>
@@ -190,6 +119,19 @@ export function Top30StocksTable({ onStockClick }: Top30StocksTableProps) {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
+                            {sortedStocks.length === 0 && searchQuery && (
+                                <TableRow>
+                                    <TableCell colSpan={7} className="text-center py-6">
+                                        <div className="text-center">
+                                            <div className="max-w-md mx-auto">
+                                                <p className="text-muted-foreground">
+                                                    No stocks found matching "{searchQuery}".
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            )}
                             {sortedStocks.map((stock, index) => {
                                 const priceChange = calculatePriceChange(stock.ltp, stock.ycp)
                                 const changeColor = getPriceChangeColor(priceChange.isPositive)

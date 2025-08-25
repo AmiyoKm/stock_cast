@@ -17,12 +17,12 @@ interface StockPredictionProps {
 }
 
 export function StockPrediction({ tradingCode, currentPrice }: StockPredictionProps) {
-    const [selectedPeriod, setSelectedPeriod] = useState<PredictionPeriod>(7)
+    const [selectedPeriod, setSelectedPeriod] = useState<PredictionPeriod>(3)
     const [allPredictions, setAllPredictions] = useState<PredictionData | null>(null)
 
     const predictionMutation = useMutation({
         mutationFn: async () => {
-            return await StockAPI.getStockPrediction(tradingCode, 7)
+            return await StockAPI.getStockPrediction(tradingCode, selectedPeriod)
         },
         onSuccess: (data) => {
             setAllPredictions(data)
@@ -34,6 +34,7 @@ export function StockPrediction({ tradingCode, currentPrice }: StockPredictionPr
     }, [tradingCode])
 
     const handlePeriodChange = (period: PredictionPeriod) => {
+        predictionMutation.mutate()
         setSelectedPeriod(period)
     }
 

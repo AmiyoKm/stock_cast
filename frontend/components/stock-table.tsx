@@ -1,101 +1,49 @@
 "use client"
 
-import type React from "react"
-import { useState } from "react"
-import type { Stock } from "@/types/stock"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { ArrowUpDown, TrendingUp, TrendingDown, Eye, Heart } from "lucide-react"
-import { useFavorites } from "@/contexts/favorites-context"
 import { StockTermTooltip } from "@/components/stock-glossary"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { SortButton } from "@/components/ui/sort-button"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { useFavorites } from "@/contexts/favorites-context"
 import {
+    calculatePriceChange,
     formatCurrency,
     formatNumber,
     formatVolume,
-    calculatePriceChange,
     getPriceChangeColor,
 } from "@/lib/utils/format"
+import { sortStocks, type SortDirection, type SortField } from "@/lib/utils/sort"
+import { handleFavoriteToggle as toggleFavorite, useTableSort } from "@/lib/utils/table-handlers"
+import type { Stock } from "@/types/stock"
+import { Eye, Heart, TrendingDown, TrendingUp } from "lucide-react"
+import type React from "react"
+import { useState } from "react"
 
 interface StockTableProps {
     stocks: Stock[]
     onStockClick?: (tradingCode: string) => void
 }
 
-type SortField = "tradingCode" | "ltp" | "change" | "volume" | "value"
-type SortDirection = "asc" | "desc"
-
 export function StockTable({ stocks, onStockClick }: StockTableProps) {
     const [sortField, setSortField] = useState<SortField>("tradingCode")
     const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
     const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites()
 
-    const handleSort = (field: SortField) => {
-        if (sortField === field) {
-            setSortDirection(sortDirection === "asc" ? "desc" : "asc")
-        } else {
-            setSortField(field)
-            setSortDirection("asc")
-        }
-    }
-
-    const handleFavoriteToggle = (tradingCode: string, e: React.MouseEvent) => {
-        e.stopPropagation()
-        if (isFavorite(tradingCode)) {
-            removeFromFavorites(tradingCode)
-        } else {
-            addToFavorites(tradingCode)
-        }
-    }
-
-    const sortedStocks = [...stocks].sort((a, b) => {
-        let aValue: number | string
-        let bValue: number | string
-
-        switch (sortField) {
-            case "tradingCode":
-                aValue = a.tradingCode
-                bValue = b.tradingCode
-                break
-            case "ltp":
-                aValue = a.ltp
-                bValue = b.ltp
-                break
-            case "change":
-                aValue = calculatePriceChange(a.ltp, a.ycp).change
-                bValue = calculatePriceChange(b.ltp, b.ycp).change
-                break
-            case "volume":
-                aValue = a.volume
-                bValue = b.volume
-                break
-            case "value":
-                aValue = a.value
-                bValue = b.value
-                break
-            default:
-                aValue = a.tradingCode
-                bValue = b.tradingCode
-        }
-
-        if (typeof aValue === "string" && typeof bValue === "string") {
-            return sortDirection === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue)
-        }
-
-        return sortDirection === "asc" ? (aValue as number) - (bValue as number) : (bValue as number) - (aValue as number)
-    })
-
-    const SortButton = ({ field, children }: { field: SortField; children: React.ReactNode }) => (
-        <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 px-2 font-medium hover:bg-accent transition-colors"
-            onClick={() => handleSort(field)}
-        >
-            {children}
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+    // Use reusable table sort handler
+    const handleSort = useTableSort(
+        sortField,
+        setSortField,
+        sortDirection,
+        setSortDirection
     )
+
+    // Use reusable favorite toggle handler
+    const handleFavoriteToggle = (tradingCode: string, e: React.MouseEvent) => {
+        toggleFavorite(tradingCode, e, isFavorite, addToFavorites, removeFromFavorites)
+    }
+
+    const sortedStocks = sortStocks(stocks, sortField, sortDirection)
 
     return (
         <Card className="overflow-hidden">
@@ -109,20 +57,20 @@ export function StockTable({ stocks, onStockClick }: StockTableProps) {
                             <TableRow className="hover:bg-transparent">
                                 <TableHead className="min-w-[140px]">
                                     <StockTermTooltip term="TRADING CODE">
-                                        <SortButton field="tradingCode">Trading Code</SortButton>
+                                        <SortButton field="tradingCode" onClick={handleSort}>Trading Code</SortButton>
                                     </StockTermTooltip>
                                 </TableHead>
                                 <TableHead className="text-right min-w-[100px]">
                                     <StockTermTooltip term="LTP">
                                         <div className="flex justify-end w-full">
-                                            <SortButton field="ltp">LTP</SortButton>
+                                            <SortButton field="ltp" onClick={handleSort}>LTP</SortButton>
                                         </div>
                                     </StockTermTooltip>
                                 </TableHead>
                                 <TableHead className="text-right min-w-[120px]">
                                     <StockTermTooltip term="CHANGE">
                                         <div className="flex justify-end w-full">
-                                            <SortButton field="change">Change</SortButton>
+                                            <SortButton field="change" onClick={handleSort}>Change</SortButton>
                                         </div>
                                     </StockTermTooltip>
                                 </TableHead>
@@ -143,14 +91,14 @@ export function StockTable({ stocks, onStockClick }: StockTableProps) {
                                 <TableHead className="text-right min-w-[100px] hidden md:table-cell">
                                     <StockTermTooltip term="VOLUME">
                                         <div className="flex justify-end w-full">
-                                            <SortButton field="volume">Volume</SortButton>
+                                            <SortButton field="volume" onClick={handleSort}>Volume</SortButton>
                                         </div>
                                     </StockTermTooltip>
                                 </TableHead>
                                 <TableHead className="text-right min-w-[120px] hidden lg:table-cell">
                                     <StockTermTooltip term="VALUE">
                                         <div className="flex justify-end w-full">
-                                            <SortButton field="value">Value</SortButton>
+                                            <SortButton field="value" onClick={handleSort}>Value</SortButton>
                                         </div>
                                     </StockTermTooltip>
                                 </TableHead>
@@ -215,8 +163,8 @@ export function StockTable({ stocks, onStockClick }: StockTableProps) {
                                                 >
                                                     <Heart
                                                         className={`h-4 w-4 ${isFavorite(stock.tradingCode)
-                                                                ? "fill-red-500 text-red-500"
-                                                                : "text-muted-foreground hover:text-red-500"
+                                                            ? "fill-red-500 text-red-500"
+                                                            : "text-muted-foreground hover:text-red-500"
                                                             }`}
                                                     />
                                                 </Button>
