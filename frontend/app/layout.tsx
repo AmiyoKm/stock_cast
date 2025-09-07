@@ -1,5 +1,4 @@
 import { AppProviders } from "@/components/providers/AppProviders"
-import { FavoritesProvider } from "@/contexts/favorites-context"
 import type { Metadata } from "next"
 import type React from "react"
 import { Toaster } from "sonner"
@@ -21,10 +20,8 @@ export default function RootLayout({
             </head>
             <body>
                 <AppProviders>
-                    <FavoritesProvider>
                         {children}
                         <Toaster position="bottom-right" richColors />
-                    </FavoritesProvider>
                 </AppProviders>
             </body>
         </html>
