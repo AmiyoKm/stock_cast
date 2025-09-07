@@ -7,7 +7,6 @@ import { ErrorCard } from "@/components/ui/error-card"
 import { LoadingCard } from "@/components/ui/loading-card"
 import { SortButton } from "@/components/ui/sort-button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { useFavorites } from "@/contexts/favorites-context"
 import {
     calculatePriceChange,
     formatCurrency,
@@ -25,13 +24,12 @@ import { useState } from "react"
 interface Top30StocksTableProps {
     onStockClick?: (tradingCode: string) => void
     searchQuery?: string
-    stocks?: Stock[] // Properly typed with Stock type
+    stocks?: Stock[]
 }
 
 export function Top30StocksTable({ onStockClick, searchQuery = "", stocks = [] }: Top30StocksTableProps) {
     const [sortField, setSortField] = useState<SortField>("change")
     const [sortDirection, setSortDirection] = useState<SortDirection>("desc")
-    const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites()
 
     const isLoading = stocks.length === 0
     const isError = false
@@ -40,19 +38,14 @@ export function Top30StocksTable({ onStockClick, searchQuery = "", stocks = [] }
         return <LoadingCard title="Top 30 Performers" />
     }
 
-    // Use reusable table sort handler with custom default direction
     const handleSort = useTableSort(
         sortField,
         setSortField,
         sortDirection,
         setSortDirection,
-        "desc" // Default to descending order for Top30 table
+        "desc"
     )
 
-    // Use reusable favorite toggle handler
-    const handleFavoriteToggle = (tradingCode: string, e: React.MouseEvent) => {
-        toggleFavorite(tradingCode, e, isFavorite, addToFavorites, removeFromFavorites)
-    }
 
     // Filter stocks based on searchQuery
     const filteredStocks = searchQuery.trim() === ""
@@ -176,19 +169,6 @@ export function Top30StocksTable({ onStockClick, searchQuery = "", stocks = [] }
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-1">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                    onClick={(e) => handleFavoriteToggle(stock.tradingCode, e)}
-                                                >
-                                                    <Heart
-                                                        className={`h-4 w-4 ${isFavorite(stock.tradingCode)
-                                                            ? "fill-red-500 text-red-500"
-                                                            : "text-muted-foreground hover:text-red-500"
-                                                            }`}
-                                                    />
-                                                </Button>
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"

@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ErrorCard } from "@/components/ui/error-card"
 import { LoadingCard } from "@/components/ui/loading-card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { useFavorites } from "@/contexts/favorites-context"
 import {
     calculatePriceChange,
     formatCurrency,
@@ -31,7 +30,6 @@ interface DSEXDataTableProps {
 export function DSEXDataTable({ onStockClick, searchQuery = "", stocks = [] }: DSEXDataTableProps) {
     const [sortField, setSortField] = useState<SortField>("tradingCode")
     const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
-    const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites()
 
     const isLoading = stocks.length === 0
     const error: Error | null = null
@@ -47,11 +45,6 @@ export function DSEXDataTable({ onStockClick, searchQuery = "", stocks = [] }: D
         sortDirection,
         setSortDirection
     )
-
-    // Use reusable favorite toggle handler
-    const handleFavoriteToggle = (tradingCode: string, e: React.MouseEvent) => {
-        toggleFavorite(tradingCode, e, isFavorite, addToFavorites, removeFromFavorites)
-    }
 
     // Filter stocks based on searchQuery
     const filteredStocks = searchQuery.trim() === ""
@@ -194,19 +187,6 @@ export function DSEXDataTable({ onStockClick, searchQuery = "", stocks = [] }: D
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-1">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                    onClick={(e) => handleFavoriteToggle(stock.tradingCode, e)}
-                                                >
-                                                    <Heart
-                                                        className={`h-4 w-4 ${isFavorite(stock.tradingCode)
-                                                            ? "fill-red-500 text-red-500"
-                                                            : "text-muted-foreground hover:text-red-500"
-                                                            }`}
-                                                    />
-                                                </Button>
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"

@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { TrendingUp, TrendingDown, Heart } from "lucide-react"
-import { useFavorites } from "@/contexts/favorites-context"
 import { formatCurrency, calculatePriceChange, getPriceChangeColor } from "@/lib/utils/format"
 
 interface StockDetailCardProps {
@@ -15,15 +14,7 @@ interface StockDetailCardProps {
 export function StockDetailCard({ stock }: StockDetailCardProps) {
   const priceChange = calculatePriceChange(stock.ltp, stock.ycp)
   const changeColor = getPriceChangeColor(priceChange.isPositive)
-  const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites()
 
-  const handleFavoriteToggle = () => {
-    if (isFavorite(stock.tradingCode)) {
-      removeFromFavorites(stock.tradingCode)
-    } else {
-      addToFavorites(stock.tradingCode)
-    }
-  }
 
   return (
     <Card>
@@ -31,15 +22,6 @@ export function StockDetailCard({ stock }: StockDetailCardProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <CardTitle className="font-serif text-2xl">{stock.tradingCode}</CardTitle>
-            <Button variant="ghost" size="icon" onClick={handleFavoriteToggle} className="h-8 w-8">
-              <Heart
-                className={`h-5 w-5 ${
-                  isFavorite(stock.tradingCode)
-                    ? "fill-red-500 text-red-500"
-                    : "text-muted-foreground hover:text-red-500"
-                }`}
-              />
-            </Button>
           </div>
           <Badge variant={priceChange.isPositive ? "default" : "destructive"} className="gap-1">
             {priceChange.isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
