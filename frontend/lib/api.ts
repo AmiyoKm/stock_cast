@@ -1,9 +1,13 @@
-import type { EnvelopeStock, EnvelopeStocks, RealTimeResponse } from "@/types/api"
-import { PredictionData, PredictionRequest, PredictionResponse } from "@/types/prediction"
-import type { Stock, StockHistoryPoint } from "@/types/stock"
+import type { EnvelopeStock, EnvelopeStocks, RealTimeResponse } from "@/types/api";
+import { PredictionData, PredictionRequest, PredictionResponse } from "@/types/prediction";
+import type { Stock, StockHistoryPoint } from "@/types/stock";
 
-const API_BASE_URL = process.env.NODE_ENV === "development" ? "http://localhost:8080/v1" : "/api/v1"
-const REALTIME_API_BASE_URL = process.env.NODE_ENV === "development" ? "http://localhost:4000/v1/dse" : "/api/v1/dse"
+const API_BASE_URL = process.env.NODE_ENV === "development"
+    ? "http://localhost:8080/v1"
+    : process.env.API_BASE_URL;
+const REALTIME_API_BASE_URL = process.env.NODE_ENV === "development"
+    ? "http://localhost:4000/v1/dse"
+    : process.env.REALTIME_API_BASE_URL;
 
 export class StockAPI {
     private static async fetchAPI<T>(endpoint: string): Promise<T> {
