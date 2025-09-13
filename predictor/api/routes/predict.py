@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from models.stock import StockDataRequest, PredictionResponse
-from services.prediction_service import get_prediction, is_valid_trading_code
-from services.validation_service import (
+from services.prediction_service import get_prediction, is_valid_trading_code # pyright: ignore[reportMissingImports]
+from services.validation_service import ( # pyright: ignore[reportMissingImports]
     validate_prediction_request,
     validate_trading_code,
     validate_prediction_horizon,

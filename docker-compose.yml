@@ -1,0 +1,80 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: stock_cast
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: stock_cast
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U stock_cast" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/development/backend.Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - postgres
+      - bd-stock-api
+    environment:
+      DB_ADDR: "postgres://stock_cast:password@postgres:5432/stock_cast?sslmode=disable"
+
+  bd-stock-api:
+    build:
+      context: .
+      dockerfile: docker/development/bd-stock-api.Dockerfile
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./bd-stock-api:/app
+      - bd-stock-api-node_modules:/app/node_modules
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/development/frontend.Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+      - bd-stock-api
+    environment:
+      API_BASE_URL: "http://backend:8080/v1"
+      REALTIME_API_BASE_URL: "http://bd-stock-api:4000/v1/dse"
+    volumes:
+      - ./frontend:/app
+      - frontend-node_modules:/app/node_modules
+
+  predictor:
+    build:
+      context: .
+      dockerfile: docker/development/predictor.Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./predictor/api:/app/api
+      - ./predictor/artifacts_unified:/app/artifacts_unified
+
+  make-db:
+    build:
+      context: .
+      dockerfile: docker/development/make-db.Dockerfile
+    depends_on:
+      - postgres
+      - bd-stock-api
+    environment:
+      DB_ADDR: "postgres://stock_cast:password@postgres:5432/stock_cast?sslmode=disable"
+      BD_STOCK_API_URL: "http://bd-stock-api:4000"
+
+volumes:
+  postgres_data:
+  bd-stock-api-node_modules:
+  frontend-node_modules:
