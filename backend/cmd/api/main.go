@@ -1,6 +1,7 @@
 package main
 
 import (
+	"sync"
 	"time"
 
 	"stockcast/internal/db"
@@ -56,12 +57,13 @@ func main() {
 		},
 	}
 	config := Config{
-		db:          dbConfig,
-		env:         env.GetString("ENVIRONMENT", "DEVELOPMENT"),
-		addr:        env.GetString("ADDR", ":8080"),
-		apiUrl:      env.GetString("API_URL", "localhost:8080"),
-		frontendURL: env.GetString("FRONT_END_URL_PROD", "http://localhost:5173"),
-		auth:        authConfig,
+		db:           dbConfig,
+		env:          env.GetString("ENVIRONMENT", "DEVELOPMENT"),
+		addr:         env.GetString("ADDR", ":8080"),
+		apiUrl:       env.GetString("API_URL", "localhost:8080"),
+		frontendURL:  env.GetString("FRONT_END_URL_PROD", "http://localhost:5173"),
+		auth:         authConfig,
+		predictorURL: env.GetString("PREDICTOR_URL", "http://predictor:8000"),
 	}
 
 	db, err := db.New(config.db.addr, config.db.maxConnOpen, config.db.maxIdleConn, config.db.maxIdleTime)
@@ -76,6 +78,7 @@ func main() {
 		cfg:    config,
 		logger: logger,
 		store:  store,
+		wg:     sync.WaitGroup{},
 	}
 	mux := app.mount()
 	logger.Fatal(app.run(mux))

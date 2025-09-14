@@ -1,6 +1,3 @@
-"""
-Configuration settings for the prediction API
-"""
 
 # Prediction settings
 MIN_HISTORY_LENGTH = 60  # Minimum number of days of history required

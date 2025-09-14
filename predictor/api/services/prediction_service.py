@@ -2,10 +2,10 @@ from datetime import datetime, timedelta
 import numpy as np
 from typing import Dict, List, Tuple, Any
 
-from models.stock import Stock
-from utils.artifacts import load_artifacts
-from utils.preprocessing import prepare_data
-from config.prediction_config import N_FEATURES, SUPPORTED_HORIZONS, BASE_MODEL_HORIZON
+from ..models.stock import Stock
+from ..utils.artifacts import load_artifacts
+from ..utils.preprocessing import prepare_data
+from ..config.prediction_config import N_FEATURES, SUPPORTED_HORIZONS, BASE_MODEL_HORIZON
 
 # Load artifacts on module import
 scaler, scrip_to_id, models = load_artifacts()

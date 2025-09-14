@@ -1,7 +1,7 @@
 from typing import List, Tuple
 from fastapi import HTTPException
-from models.stock import Stock
-from config.prediction_config import MIN_HISTORY_LENGTH, SUPPORTED_HORIZONS
+from ..models.stock import Stock
+from ..config.prediction_config import MIN_HISTORY_LENGTH, SUPPORTED_HORIZONS
 
 
 def validate_history_length(
@@ -17,7 +17,7 @@ def validate_history_length(
 
 def validate_trading_code(trading_code: str, valid_codes_fn) -> None:
     """Validate that the trading code exists in our mapping"""
-    from services.prediction_service import (
+    from ..services.prediction_service import (
         is_valid_trading_code,
         get_available_trading_codes,
     )

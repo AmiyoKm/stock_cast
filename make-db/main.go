@@ -193,7 +193,6 @@ func main() {
 	flag.IntVar(&endMonth, "endMonth", 12, "ending month (1-12)")
 	flag.Parse()
 
-	// Validate flags
 	if year < 2022 || year > time.Now().Year() {
 		panic("Invalid year")
 	}
@@ -202,12 +201,10 @@ func main() {
 	}
 
 	for m := startMonth; m <= endMonth; m++ {
-		// Format start date with zero-padding (e.g., "2024-01-01")
 		start := fmt.Sprintf("%d-%02d-01", year, m)
 
-		// Calculate end date (last day of the month)
 		endTime := time.Date(year, time.Month(m+1), 0, 0, 0, 0, 0, time.UTC)
-		if m == 12 { // Handle December edge case
+		if m == 12 {
 			endTime = time.Date(year, time.Month(12), 31, 0, 0, 0, 0, time.UTC)
 		}
 		end := endTime.Format("2006-01-02")
@@ -229,7 +226,7 @@ func main() {
 			fmt.Println("JSON decode error:", err)
 			continue
 		}
-		resp.Body.Close() // Close immediately after decoding
+		resp.Body.Close()
 
 		fmt.Printf("Rows received for %d-%02d: %d\n", year, m, len(result.Data))
 
