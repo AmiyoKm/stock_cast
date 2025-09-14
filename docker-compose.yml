@@ -26,6 +26,7 @@ services:
       - bd-stock-api
     environment:
       DB_ADDR: "postgres://stock_cast:password@postgres:5432/stock_cast?sslmode=disable"
+      PREDICTOR_URL: "http://predictor:8000"
 
   bd-stock-api:
     build:

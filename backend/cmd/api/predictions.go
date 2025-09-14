@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"stockcast/internal/store"
@@ -58,7 +59,8 @@ func (app *application) getPredictions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := http.Post("http://localhost:8000/api/predict", "application/json", bytes.NewBuffer(requestBody))
+	app.logger.Info("PREDICTOR URL", app.cfg.predictorURL)
+	resp, err := http.Post(fmt.Sprintf("%s/api/predict", app.cfg.predictorURL), "application/json", bytes.NewBuffer(requestBody))
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return

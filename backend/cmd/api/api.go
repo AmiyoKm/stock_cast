@@ -20,12 +20,13 @@ type application struct {
 }
 
 type Config struct {
-	addr        string
-	auth        authConfig
-	apiUrl      string
-	env         string
-	db          DbConfig
-	frontendURL string
+	addr         string
+	auth         authConfig
+	apiUrl       string
+	env          string
+	db           DbConfig
+	frontendURL  string
+	predictorURL string
 }
 type authConfig struct {
 	basic basicConfig
