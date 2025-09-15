@@ -113,55 +113,6 @@ func convert(raw RawStockRow) (StockRow, error) {
 	}, nil
 }
 
-//func main() {
-// 	resp, err := http.Get("http://localhost:4000/v1/dse/historical?start=2025-08-25&end=2025-09-07")
-
-// 	fmt.Println(resp.StatusCode, resp.Header)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	defer resp.Body.Close()
-
-// 	var result struct {
-// 		Data []RawStockRow `json:"data"`
-// 	}
-// 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-// 		panic(err)
-// 	}
-// 	fmt.Println("Rows received:", len(result.Data))
-
-// dbAddr := os.Getenv("DB_ADDR")
-// if dbAddr == "" {
-// 	dbAddr = "user=stock_cast password=password dbname=stock_cast sslmode=disable"
-// }
-
-// 	db, err := sql.Open("postgres", dbAddr)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	defer db.Close()
-
-// 	stmt, err := db.Prepare(`INSERT INTO stock_history (date, trading_code, ltp, high, low, openp, closep, ycp, trade, value, volume)
-//         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	defer stmt.Close()
-
-// 	for _, raw := range result.Data {
-// 		row, err := convert(raw)
-// 		if err != nil {
-// 			fmt.Println("Skipping row due to error:", err)
-// 			continue
-// 		}
-// 		_, err = stmt.Exec(row.Date, row.TradingCode, row.Ltp, row.High, row.Low, row.Openp, row.Closep, row.Ycp, row.Trade, row.Value, row.Volume)
-// 		if err != nil {
-// 			fmt.Println("DB insert error:", err)
-// 		}
-// 	}
-// 	fmt.Println("Data import complete.")
-// }
-
 func main() {
 	dbAddr := os.Getenv("DB_ADDR")
 	if dbAddr == "" {
@@ -178,6 +129,31 @@ func main() {
 		bdStockApiUrl = "http://localhost:4000"
 	}
 
+	var start string
+	var end string
+	flag.StringVar(&start, "start", "2025-08-25", "Start date in YYYY-MM-DD format")
+	flag.StringVar(&end, "end", "2025-09-07", "End date in YYYY-MM-DD format")
+	flag.Parse()
+	fmt.Println("Fetching data from", bdStockApiUrl, "for date range", start, "to", end)
+
+	resp, err := http.Get(fmt.Sprintf("%s/v1/dse/historical?start=%s&end=%s", bdStockApiUrl, start, end))
+
+	fmt.Println(resp.StatusCode, resp.Header)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	var result struct {
+		Data []RawStockRow `json:"data"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		panic(err)
+	}
+	fmt.Println("Rows received:", len(result.Data))
+	
+	defer db.Close()
+
 	stmt, err := db.Prepare(`INSERT INTO stock_history (date, trading_code, ltp, high, low, openp, closep, ycp, trade, value, volume)
         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`)
 	if err != nil {
@@ -185,63 +161,16 @@ func main() {
 	}
 	defer stmt.Close()
 
-	var year int
-	flag.IntVar(&year, "year", 2023, "year to fetch data for")
-	var startMonth int
-	flag.IntVar(&startMonth, "startMonth", 1, "starting month (1-12)")
-	var endMonth int
-	flag.IntVar(&endMonth, "endMonth", 12, "ending month (1-12)")
-	flag.Parse()
-
-	if year < 2022 || year > time.Now().Year() {
-		panic("Invalid year")
-	}
-	if startMonth < 1 || startMonth > 12 || endMonth < 1 || endMonth > 12 || startMonth > endMonth {
-		panic("Invalid month range")
-	}
-
-	for m := startMonth; m <= endMonth; m++ {
-		start := fmt.Sprintf("%d-%02d-01", year, m)
-
-		endTime := time.Date(year, time.Month(m+1), 0, 0, 0, 0, 0, time.UTC)
-		if m == 12 {
-			endTime = time.Date(year, time.Month(12), 31, 0, 0, 0, 0, time.UTC)
-		}
-		end := endTime.Format("2006-01-02")
-
-		url := fmt.Sprintf("%s/v1/dse/historical?start=%s&end=%s", bdStockApiUrl, start, end)
-		fmt.Println("Fetching:", url)
-
-		resp, err := http.Get(url)
+	for _, raw := range result.Data {
+		row, err := convert(raw)
 		if err != nil {
-			fmt.Println("HTTP error:", err)
+			fmt.Println("Skipping row due to error:", err)
 			continue
 		}
-
-		var result struct {
-			Data []RawStockRow `json:"data"`
+		_, err = stmt.Exec(row.Date, row.TradingCode, row.Ltp, row.High, row.Low, row.Openp, row.Closep, row.Ycp, row.Trade, row.Value, row.Volume)
+		if err != nil {
+			fmt.Println("DB insert error:", err)
 		}
-		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-			resp.Body.Close()
-			fmt.Println("JSON decode error:", err)
-			continue
-		}
-		resp.Body.Close()
-
-		fmt.Printf("Rows received for %d-%02d: %d\n", year, m, len(result.Data))
-
-		for _, raw := range result.Data {
-			row, err := convert(raw)
-			if err != nil {
-				fmt.Println("Skipping row due to error:", err)
-				continue
-			}
-			_, err = stmt.Exec(row.Date, row.TradingCode, row.Ltp, row.High, row.Low, row.Openp, row.Closep, row.Ycp, row.Trade, row.Value, row.Volume)
-			if err != nil {
-				fmt.Println("DB insert error:", err)
-			}
-		}
-		fmt.Printf("Month %d-%02d import complete.\n", year, m)
 	}
-	fmt.Println("All specified months import complete.")
+	fmt.Println("Data import complete.")
 }
