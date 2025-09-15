@@ -34,7 +34,7 @@ func main() {
 	}
 
 	jwt := jwt{
-		secret: env.GetString("JWT_SECRET", "s6Ndh+pW4cTw7Y0kX8Z3v39mdj39rfnn"),
+		secret: env.GetString("JWT_SECRET", ""),
 		exp:    time.Duration(env.GetInt("JWT_EXPIRY", 24*3)) * time.Hour,
 		iss:    env.GetString("JWT_ISSUER", "stock_cast"),
 	}
