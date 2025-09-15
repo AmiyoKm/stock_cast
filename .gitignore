@@ -100,7 +100,7 @@ Thumbs.db
 *.onnx
 
 # Environment files
-.env
+*.env
 .env.local
 .env.development
 .env.test

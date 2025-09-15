@@ -7,6 +7,7 @@ import (
 	"stockcast/internal/auth"
 	"stockcast/internal/db"
 	"stockcast/internal/env"
+	mailer "stockcast/internal/mail"
 	"stockcast/internal/store"
 
 	"github.com/joho/godotenv"
@@ -38,6 +39,13 @@ func main() {
 		exp:    time.Duration(env.GetInt("JWT_EXPIRY", 24*3)) * time.Hour,
 		iss:    env.GetString("JWT_ISSUER", "stock_cast"),
 	}
+	smtp := smtp{
+		host:     env.GetString("SMTP_HOST", "smtp.gmail.com"),
+		port:     env.GetInt("SMTP_PORT", 587),
+		username: env.GetString("SMTP_USERNAME", ""),
+		password: env.GetString("SMTP_PASSWORD", ""),
+		sender:   env.GetString("SMTP_SENDER", ""),
+	}
 
 	config := Config{
 		db:           dbConfig,
@@ -46,6 +54,7 @@ func main() {
 		apiUrl:       env.GetString("API_URL", "localhost:8080"),
 		frontendURL:  env.GetString("FRONT_END_URL_PROD", "http://localhost:5173"),
 		predictorURL: env.GetString("PREDICTOR_URL", "http://predictor:8000"),
+		smtp:         smtp,
 		limiter:      limiter,
 		jwt:          jwt,
 	}
@@ -64,6 +73,7 @@ func main() {
 		store:         store,
 		wg:            sync.WaitGroup{},
 		authenticator: auth.NewJWTAuthenticator(jwt.secret, jwt.iss, jwt.iss),
+		mailer: mailer.New(config.smtp.host, config.smtp.port, config.smtp.username, config.smtp.password, config.smtp.sender),
 	}
 
 	app.logger.Fatal(app.serve())
