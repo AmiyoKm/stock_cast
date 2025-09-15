@@ -21,6 +21,7 @@ services:
       - "8080:8080"
     volumes:
       - ./backend:/app
+      - go_mod_cache:/go/pkg/mod
     depends_on:
       - postgres
       - bd-stock-api
@@ -79,3 +80,4 @@ volumes:
   postgres_data:
   bd-stock-api-node_modules:
   frontend-node_modules:
+  go_mod_cache:

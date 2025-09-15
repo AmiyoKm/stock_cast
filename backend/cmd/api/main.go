@@ -4,6 +4,7 @@ import (
 	"sync"
 	"time"
 
+	"stockcast/internal/auth"
 	"stockcast/internal/db"
 	"stockcast/internal/env"
 	"stockcast/internal/store"
@@ -12,25 +13,6 @@ import (
 	"go.uber.org/zap"
 )
 
-const version string = "0.0.1"
-
-//	@title			BookBound API
-//	@description	API for BookBound .
-//	@termsOfService	http://swagger.io/terms/
-
-//	@contact.name	API Support
-//	@contact.url	http://www.swagger.io/support
-//	@contact.email	support@swagger.io
-
-//	@license.name	Apache 2.0
-//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
-
-// @BasePath					/api/v1
-//
-// @securityDefinitions.apikey	ApiKeyAuth
-// @in							header
-// @name						Authorization
-// @description
 func main() {
 	logger := zap.Must(zap.NewProduction()).Sugar()
 	defer logger.Sync()
@@ -45,25 +27,27 @@ func main() {
 		maxIdleTime: env.GetString("MAX_IDLE_TIME", "15m"),
 	}
 
-	authConfig := authConfig{
-		basic: basicConfig{
-			user: env.GetString("AUTH_BASIC_USER", "admin"),
-			pass: env.GetString("AUTH_BASIC_PASS", "admin"),
-		},
-		token: tokenConfig{
-			secret: env.GetString("AUTH_TOKEN_SECRET", "example"),
-			exp:    time.Hour * 24 * 3,
-			iss:    "stockcast",
-		},
+	limiter := limiter{
+		rps:     env.GetInt("LIMITER_RPS", 2),
+		burst:   env.GetInt("LIMITER_BURST", 4),
+		enabled: env.GetBool("LIMITER_ENABLED", true),
 	}
+
+	jwt := jwt{
+		secret: env.GetString("JWT_SECRET", "s6Ndh+pW4cTw7Y0kX8Z3v39mdj39rfnn"),
+		exp:    time.Duration(env.GetInt("JWT_EXPIRY", 24*3)) * time.Hour,
+		iss:    env.GetString("JWT_ISSUER", "stock_cast"),
+	}
+
 	config := Config{
 		db:           dbConfig,
 		env:          env.GetString("ENVIRONMENT", "DEVELOPMENT"),
 		addr:         env.GetString("ADDR", ":8080"),
 		apiUrl:       env.GetString("API_URL", "localhost:8080"),
 		frontendURL:  env.GetString("FRONT_END_URL_PROD", "http://localhost:5173"),
-		auth:         authConfig,
 		predictorURL: env.GetString("PREDICTOR_URL", "http://predictor:8000"),
+		limiter:      limiter,
+		jwt:          jwt,
 	}
 
 	db, err := db.New(config.db.addr, config.db.maxConnOpen, config.db.maxIdleConn, config.db.maxIdleTime)
@@ -75,11 +59,12 @@ func main() {
 
 	store := store.NewStorage(db)
 	app := &application{
-		cfg:    config,
-		logger: logger,
-		store:  store,
-		wg:     sync.WaitGroup{},
+		cfg:           config,
+		logger:        logger,
+		store:         store,
+		wg:            sync.WaitGroup{},
+		authenticator: auth.NewJWTAuthenticator(jwt.secret, jwt.iss, jwt.iss),
 	}
-	mux := app.mount()
-	logger.Fatal(app.run(mux))
+
+	app.logger.Fatal(app.serve())
 }
