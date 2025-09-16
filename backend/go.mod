@@ -11,6 +11,8 @@ require (
 
 require github.com/golang-jwt/jwt/v5 v5.3.0
 
+require gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
+
 require (
 	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
@@ -25,4 +27,5 @@ require (
 	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
 	golang.org/x/time v0.13.0
+	gopkg.in/mail.v2 v2.3.1
 )

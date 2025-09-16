@@ -10,7 +10,7 @@ import (
 	JWT "github.com/golang-jwt/jwt/v5"
 )
 
-func (app *application) sendActivationEmail(w http.ResponseWriter, r *http.Request) {
+func (app *application) sendActivationEmailHandler(w http.ResponseWriter, r *http.Request) {
 	var payload struct {
 		Email string `json:"email" validate:"required,email"`
 	}
@@ -47,17 +47,17 @@ func (app *application) sendActivationEmail(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	// app.background(func() {
-	// 	data := map[string]any{
-	// 		"userID":          user.ID,
-	// 		"activationToken": token.Plaintext,
-	// 	}
+	app.background(func() {
+		data := map[string]any{
+			"userID":          user.ID,
+			"activationToken": token.Plaintext,
+		}
 
-	// 	err := app.mailer.Send(user.Email, "user_welcome.tmpl", data)
-	// 	if err != nil {
-	// 		app.logger.PrintError(err, nil)
-	// 	}
-	// })
+		err := app.mailer.Send(user.Email, "user_welcome.tmpl", data)
+		if err != nil {
+			app.logger.Error(err, nil)
+		}
+	})
 
 	if err := app.writeJSON(w, http.StatusAccepted, envelope{"message": "email sent", "token": token}, nil); err != nil {
 		app.serverErrorResponse(w, r, err)
@@ -165,16 +165,16 @@ func (app *application) createPasswordHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	// app.background(func() {
-	// 	data := map[string]any{
-	// 		"passwordResetToken": token.Plaintext,
-	// 	}
-	// 	err := app.mailer.Send(user.Email, "token_password_reset.tmpl", data)
-	// 	if err != nil {
-	// 		app.logger.PrintError(err, nil)
-	// 		return
-	// 	}
-	// })
+	app.background(func() {
+		data := map[string]any{
+			"passwordResetToken": token.Plaintext,
+		}
+		err := app.mailer.Send(user.Email, "token_password_reset.tmpl", data)
+		if err != nil {
+			app.logger.Error(err, nil)
+			return
+		}
+	})
 
 	env := envelope{"message": "an email will be sent to you containing password reset instruction", "token": token}
 	if err := app.writeJSON(w, http.StatusAccepted, env, nil); err != nil {

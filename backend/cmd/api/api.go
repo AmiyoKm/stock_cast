@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"stockcast/internal/auth"
+	mailer "stockcast/internal/mail"
 	"stockcast/internal/store"
 	"sync"
 	"time"
@@ -18,6 +19,7 @@ type application struct {
 	store         store.Storage
 	wg            sync.WaitGroup
 	authenticator auth.Authenticator
+	mailer        mailer.Mailer
 }
 
 type Config struct {
@@ -27,8 +29,16 @@ type Config struct {
 	db           DbConfig
 	frontendURL  string
 	predictorURL string
+	smtp         smtp
 	limiter      limiter
 	jwt          jwt
+}
+type smtp struct {
+	host     string
+	port     int
+	username string
+	password string
+	sender   string
 }
 type DbConfig struct {
 	addr        string
@@ -72,6 +82,7 @@ func (app *application) mount() http.Handler {
 			r.Post("/register", app.registerUserHandler)
 			r.Post("/login", app.userLoginHandler)
 			r.Post("/activate", app.activateUserHandler)
+			r.Post("/resend-activation", app.sendActivationEmailHandler)
 			r.Post("/forgot-password", app.createPasswordHandler)
 			r.Post("/reset-password", app.updatePasswordHandler)
 		})

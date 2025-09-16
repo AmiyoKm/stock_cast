@@ -24,7 +24,7 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		app.badRequestResponse(w, r, err)
 		return
 	}
-	
+
 	user := &store.User{
 		Name:      payload.Name,
 		Email:     payload.Email,
@@ -60,16 +60,16 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	// app.background(func() {
-	// 	data := map[string]any{
-	// 		"activationToken": token.Plaintext,
-	// 		"userID":          user.ID,
-	// 	}
-	// 	err = app.mailer.Send(user.Email, "user_welcome.tmpl", data)
-	// 	if err != nil {
-	// 		app.logger.PrintError(err, nil)
-	// 	}
-	// })
+	app.background(func() {
+		data := map[string]any{
+			"activationToken": token.Plaintext,
+			"userID":          user.ID,
+		}
+		err = app.mailer.Send(user.Email, "user_welcome.tmpl", data)
+		if err != nil {
+			app.logger.Error(err, nil)
+		}
+	})
 
 	err = app.writeJSON(w, http.StatusAccepted, envelope{"user": user, "token": token}, nil)
 	if err != nil {

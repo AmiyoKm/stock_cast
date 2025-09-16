@@ -3,7 +3,7 @@ services:
     image: postgres:16
     environment:
       POSTGRES_USER: stock_cast
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: stock_cast
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U stock_cast" ]
@@ -26,9 +26,14 @@ services:
       - postgres
       - bd-stock-api
     environment:
-      DB_ADDR: "postgres://stock_cast:password@postgres:5432/stock_cast?sslmode=disable"
+      DB_ADDR: "postgres://stock_cast:${POSTGRES_PASSWORD}@postgres:5432/stock_cast?sslmode=disable"
       PREDICTOR_URL: "http://predictor:8000"
-      JWT_SECRET: "s6Ndh+pW4cTw7Y0kX8Z3v39mdj39rfnn"
+      JWT_SECRET: ${JWT_SECRET}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USERNAME: ${SMTP_USERNAME}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_SENDER: ${SMTP_SENDER}
 
   bd-stock-api:
     build:
@@ -74,7 +79,7 @@ services:
       - postgres
       - bd-stock-api
     environment:
-      DB_ADDR: "postgres://stock_cast:password@postgres:5432/stock_cast?sslmode=disable"
+      DB_ADDR: "postgres://stock_cast:${POSTGRES_PASSWORD}@postgres:5432/stock_cast?sslmode=disable"
       BD_STOCK_API_URL: "http://bd-stock-api:4000"
 
 volumes:
