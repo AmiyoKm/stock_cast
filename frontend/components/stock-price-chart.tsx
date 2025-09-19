@@ -10,7 +10,7 @@ import type { ChartTimeframe } from "@/types/stock"
 import { useQuery } from "@tanstack/react-query"
 import { BarChart3, TrendingDown, TrendingUp } from "lucide-react"
 import { useState } from "react"
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
+import { Area, AreaChart, Bar, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 
 interface StockPriceChartProps {
     tradingCode: string

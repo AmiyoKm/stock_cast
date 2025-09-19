@@ -1,7 +1,6 @@
 import { Stock } from "@/types/stock"
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { SortField } from "./utils/sort"
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))

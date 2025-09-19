@@ -9,7 +9,7 @@ import { useState } from "react"
 import { ModeToggle } from "./mode-toggle"
 
 interface HeaderProps {
-    onSearch?: (query: string) => void
+    onSearch?: (_query: string) => void
 }
 
 export function Header({ onSearch }: HeaderProps) {

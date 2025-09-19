@@ -150,18 +150,3 @@ func (app *application) requiredAuthenticatedUser(next http.HandlerFunc) http.Ha
 		next.ServeHTTP(w, r)
 	})
 }
-
-func (app *application) requiredActivatedUser(next http.HandlerFunc) http.HandlerFunc {
-	fn := func(w http.ResponseWriter, r *http.Request) {
-		user := app.contextGetUser(r)
-
-		if !user.Activated {
-			app.inactiveAccountResponse(w, r)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-
-	}
-	return app.requiredAuthenticatedUser(fn)
-}

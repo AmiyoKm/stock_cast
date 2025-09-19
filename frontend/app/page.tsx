@@ -158,7 +158,7 @@ export default function HomePage() {
                                             <div className="max-w-md mx-auto">
                                                 <h3 className="font-semibold text-lg mb-2">No stocks found</h3>
                                                 <p className="text-muted-foreground mb-4">
-                                                    No stocks found matching "{searchQuery}". Try adjusting your search terms.
+                                                    No stocks found matching &quot;{searchQuery}&quot;. Try adjusting your search terms.
                                                 </p>
                                             </div>
                                         </div>

@@ -14,15 +14,15 @@ import {
     getPriceChangeColor,
 } from "@/lib/utils/format"
 import { sortStocks, type SortDirection, type SortField } from "@/lib/utils/sort"
-import { handleFavoriteToggle as toggleFavorite, useTableSort } from "@/lib/utils/table-handlers"
+import { useTableSort } from "@/lib/utils/table-handlers"
 import type { Stock } from "@/types/stock"
-import { Eye, Heart, TrendingDown, TrendingUp } from "lucide-react"
+import { Eye, TrendingDown, TrendingUp } from "lucide-react"
 import type React from "react"
 import { useState } from "react"
 import { SortButton } from "./ui/sort-button"
 
 interface DSEXDataTableProps {
-    onStockClick?: (tradingCode: string) => void
+    onStockClick?: (_tradingCode: string) => void
     searchQuery?: string
     stocks?: Stock[]
 }
@@ -34,10 +34,6 @@ export function DSEXDataTable({ onStockClick, searchQuery = "", stocks = [] }: D
     const isLoading = stocks.length === 0
     const error: Error | null = null
 
-    if (!stocks || stocks.length === 0) {
-        return <LoadingCard title="DSEX Market Data" />
-    }
-
     // Use reusable table sort handler
     const handleSort = useTableSort(
         sortField,
@@ -45,6 +41,10 @@ export function DSEXDataTable({ onStockClick, searchQuery = "", stocks = [] }: D
         sortDirection,
         setSortDirection
     )
+
+    if (!stocks || stocks.length === 0) {
+        return <LoadingCard title="DSEX Market Data" />
+    }
 
     // Filter stocks based on searchQuery
     const filteredStocks = searchQuery.trim() === ""
@@ -131,7 +131,7 @@ export function DSEXDataTable({ onStockClick, searchQuery = "", stocks = [] }: D
                                         <div className="text-center">
                                             <div className="max-w-md mx-auto">
                                                 <p className="text-muted-foreground">
-                                                    No stocks found matching "{searchQuery}".
+                                                    No stocks found matching &quot;{searchQuery}&quot;.
                                                 </p>
                                             </div>
                                         </div>

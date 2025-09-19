@@ -7,7 +7,7 @@ import type React from "react"
 
 interface SortButtonProps {
     field: SortField
-    onClick: (field: SortField) => void
+    onClick: (_field: SortField) => void
     children: React.ReactNode
 }
 

@@ -31,6 +31,7 @@ export function StockPrediction({ tradingCode, currentPrice }: StockPredictionPr
 
     useEffect(() => {
         predictionMutation.mutate()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tradingCode])
 
     const handlePeriodChange = (period: PredictionPeriod) => {
