@@ -13,15 +13,15 @@ import {
     getPriceChangeColor,
 } from "@/lib/utils/format"
 import { sortStocks, type SortDirection, type SortField } from "@/lib/utils/sort"
-import { handleFavoriteToggle as toggleFavorite, useTableSort } from "@/lib/utils/table-handlers"
+import { useTableSort } from "@/lib/utils/table-handlers"
 import type { Stock } from "@/types/stock"
-import { Eye, Heart, TrendingDown, TrendingUp } from "lucide-react"
+import { Eye, TrendingDown, TrendingUp } from "lucide-react"
 import type React from "react"
 import { useState } from "react"
 
 interface StockTableProps {
     stocks: Stock[]
-    onStockClick?: (tradingCode: string) => void
+    onStockClick?: (_tradingCode: string) => void
 }
 
 export function StockTable({ stocks, onStockClick }: StockTableProps) {

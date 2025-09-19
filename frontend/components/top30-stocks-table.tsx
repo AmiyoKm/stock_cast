@@ -15,14 +15,14 @@ import {
     getPriceChangeColor,
 } from "@/lib/utils/format"
 import { sortStocks, type SortDirection, type SortField } from "@/lib/utils/sort"
-import { handleFavoriteToggle as toggleFavorite, useTableSort } from "@/lib/utils/table-handlers"
+import { useTableSort } from "@/lib/utils/table-handlers"
 import type { Stock } from "@/types/stock"
-import { Eye, Heart, TrendingDown, TrendingUp } from "lucide-react"
+import { Eye, TrendingDown, TrendingUp } from "lucide-react"
 import type React from "react"
 import { useState } from "react"
 
 interface Top30StocksTableProps {
-    onStockClick?: (tradingCode: string) => void
+    onStockClick?: (_tradingCode: string) => void
     searchQuery?: string
     stocks?: Stock[]
 }
@@ -33,11 +33,6 @@ export function Top30StocksTable({ onStockClick, searchQuery = "", stocks = [] }
 
     const isLoading = stocks.length === 0
     const isError = false
-
-    if (!stocks || stocks.length === 0) {
-        return <LoadingCard title="Top 30 Performers" />
-    }
-
     const handleSort = useTableSort(
         sortField,
         setSortField,
@@ -46,6 +41,9 @@ export function Top30StocksTable({ onStockClick, searchQuery = "", stocks = [] }
         "desc"
     )
 
+    if (!stocks || stocks.length === 0) {
+        return <LoadingCard title="Top 30 Performers" />
+    }
 
     // Filter stocks based on searchQuery
     const filteredStocks = searchQuery.trim() === ""
@@ -118,7 +116,7 @@ export function Top30StocksTable({ onStockClick, searchQuery = "", stocks = [] }
                                         <div className="text-center">
                                             <div className="max-w-md mx-auto">
                                                 <p className="text-muted-foreground">
-                                                    No stocks found matching "{searchQuery}".
+                                                    No stocks found matching &quot{searchQuery}&quot.
                                                 </p>
                                             </div>
                                         </div>

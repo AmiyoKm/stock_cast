@@ -88,5 +88,12 @@ func (app *application) mount() http.Handler {
 		})
 	})
 
+	r.MethodNotAllowed(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		app.methodNotAllowedResponse(w, r)
+	}))
+	r.NotFound(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		app.notFoundResponse(w, r)
+	}))
+
 	return app.recoverPanic(app.rateLimit(app.authenticate(r)))
 }

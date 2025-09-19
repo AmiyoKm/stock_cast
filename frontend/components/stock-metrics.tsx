@@ -14,7 +14,6 @@ interface StockMetricsProps {
 export function StockMetrics({ stock }: StockMetricsProps) {
   const priceChange = calculatePriceChange(stock.ltp, stock.ycp)
   const volatility = ((stock.high - stock.low) / stock.low) * 100
-  const volumeScore = Math.min((stock.volume / 1000000) * 100, 100) // Normalize to 100
 
   const momentum =
     priceChange.changePercent > 2
@@ -49,7 +48,7 @@ export function StockMetrics({ stock }: StockMetricsProps) {
             <Badge variant={beta > 1.5 ? "destructive" : beta > 1 ? "secondary" : "default"}>{beta.toFixed(2)}</Badge>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Day's Range</span>
+            <span className="text-sm text-muted-foreground">Day&apos;s Range</span>
             <Badge variant="outline">
               {formatCurrency(stock.low)} - {formatCurrency(stock.high)}
             </Badge>

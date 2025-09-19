@@ -45,10 +45,10 @@ export default function StockDetailPage() {
         )
     }
 
+    function handleRetry(): void {
+        router.refresh()
+    }
     if (isError || !stock) {
-        function handleRetry(): void {
-            router.refresh()
-        }
         return (
             <div className="min-h-screen bg-background">
                 <Header />
