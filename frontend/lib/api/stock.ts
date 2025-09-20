@@ -1,55 +1,15 @@
 import type { EnvelopeStock, EnvelopeStocks, RealTimeResponse } from "@/types/api";
 import { PredictionData, PredictionRequest, PredictionResponse } from "@/types/prediction";
 import type { Stock, StockHistoryPoint } from "@/types/stock";
-
-const API_BASE_URL = process.env.NODE_ENV === "development"
-    ? "http://localhost:8080/v1"
-    : process.env.API_BASE_URL;
-const REALTIME_API_BASE_URL = process.env.NODE_ENV === "development"
-    ? "http://localhost:4000/v1/dse"
-    : process.env.REALTIME_API_BASE_URL;
+import { fetchAPI, fetchRealTimeAPI, postAPI } from "./utils";
 
 export class StockAPI {
-    private static async fetchAPI<T>(endpoint: string): Promise<T> {
-        const response = await fetch(`${API_BASE_URL}${endpoint}`)
-
-        if (!response.ok) {
-            throw new Error(`API Error: ${response.status} ${response.statusText}`)
-        }
-
-        return response.json()
-    }
-
-    private static async fetchRealTimeAPI<T>(endpoint: string): Promise<T> {
-        const response = await fetch(`${REALTIME_API_BASE_URL}${endpoint}`)
-        if (!response.ok) {
-            throw new Error(`API Error: ${response.status} ${response.statusText}`)
-        }
-        return response.json()
-    }
-    private static async postAPI<T>(endpoint: string, data: any): Promise<T> {
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
-        })
-
-        if (!response.ok) {
-            throw new Error(`API Error: ${response.status} ${response.statusText}`)
-        }
-
-        return response.json()
-    }
-
-
     static async getAllStocks(): Promise<RealTimeResponse> {
-        return this.fetchRealTimeAPI<RealTimeResponse>("/latest")
+        return fetchRealTimeAPI<RealTimeResponse>("/latest")
     }
 
     static async getStockByTradingCode(tradingCode: string): Promise<Stock> {
-        const res = await this.fetchAPI<EnvelopeStock>(`/stocks/${tradingCode}`)
+        const res = await fetchAPI<EnvelopeStock>(`/stocks/${tradingCode}`)
         return res.stock
     }
 
@@ -58,21 +18,21 @@ export class StockAPI {
         if (start) params.append("start", start)
         if (end) params.append("end", end)
         const query = params.toString() ? `?${params.toString()}` : ""
-        const res = await this.fetchAPI<EnvelopeStocks>(`/stocks/${tradingCode}/history${query}`)
+        const res = await fetchAPI<EnvelopeStocks>(`/stocks/${tradingCode}/history${query}`)
         return res.stocks
     }
 
     static async getTop30Stocks(): Promise<RealTimeResponse> {
-        return this.fetchRealTimeAPI<RealTimeResponse>("/top30")
+        return fetchRealTimeAPI<RealTimeResponse>("/top30")
     }
 
     static async getDSEXData(symbol?: string): Promise<RealTimeResponse> {
         const params = symbol ? `?symbol=${symbol}` : ""
-        return this.fetchRealTimeAPI<RealTimeResponse>(`/dsexdata${params}`)
+        return fetchRealTimeAPI<RealTimeResponse>(`/dsexdata${params}`)
     }
     static async getStockPrediction(tradingCode: string, nhead: number): Promise<PredictionData> {
         const request: PredictionRequest = { tradingCode, nhead }
-        const response = await this.postAPI<PredictionResponse>("/predict", request)
+        const response = await postAPI<PredictionResponse>("/predict", request)
 
         return this.parsePredictionMessage(response.prediction)
     }
@@ -90,6 +50,7 @@ export class StockAPI {
                     final_price: oneDayData.final_price || 0
                 }
             }
+
 
             if (data.predictions["3_day"]) {
                 const threeDayData = data.predictions["3_day"]
