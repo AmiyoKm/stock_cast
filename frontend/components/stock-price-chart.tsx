@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { StockAPI } from "@/lib/api"
+import { StockAPI } from "@/lib/api/stock"
 import { getDateInString } from "@/lib/time"
 import { formatCurrency } from "@/lib/utils/format"
 import type { ChartTimeframe } from "@/types/stock"
@@ -200,48 +200,48 @@ export function StockPriceChart({ tradingCode, currentPrice, previousClose }: St
                                 />
                             </AreaChart>
                         ) : (
-                                <ComposedChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                                    <XAxis
-                                        dataKey="displayDate"
-                                        tick={{ fontSize: 12 }}
-                                        axisLine={false}
-                                        tickLine={false}
-                                    />
-                                    {/* Y-Axis for Price */}
-                                    <YAxis
-                                        yAxisId="price"
-                                        domain={["dataMin - 5", "dataMax + 5"]}
-                                        tickFormatter={(value) => `৳${value}`}
-                                        tick={{ fontSize: 12 }}
-                                        axisLine={false}
-                                        tickLine={false}
-                                    />
-                                    {/* Y-Axis for Volume */}
-                                    <YAxis
-                                        yAxisId="volume"
-                                        orientation="right"
-                                        tickFormatter={(value) => `${value / 1000}k`} // Format volume
-                                        tick={{ fontSize: 12 }}
-                                        axisLine={false}
-                                        tickLine={false}
-                                    />
-                                    <Tooltip content={<CustomTooltip />} />
-                                    <Line
-                                        yAxisId="price"
-                                        type="monotone"
-                                        dataKey="closep"
-                                        stroke="hsl(var(--primary))"
-                                        strokeWidth={2}
-                                        dot={false}
-                                    />
-                                    <Bar
-                                        yAxisId="volume"
-                                        dataKey="volume"
-                                        fill="hsl(var(--secondary))"
-                                        className="opacity-50"
-                                    />
-                                </ComposedChart>
+                            <ComposedChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                                <XAxis
+                                    dataKey="displayDate"
+                                    tick={{ fontSize: 12 }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                />
+                                {/* Y-Axis for Price */}
+                                <YAxis
+                                    yAxisId="price"
+                                    domain={["dataMin - 5", "dataMax + 5"]}
+                                    tickFormatter={(value) => `৳${value}`}
+                                    tick={{ fontSize: 12 }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                />
+                                {/* Y-Axis for Volume */}
+                                <YAxis
+                                    yAxisId="volume"
+                                    orientation="right"
+                                    tickFormatter={(value) => `${value / 1000}k`} // Format volume
+                                    tick={{ fontSize: 12 }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                />
+                                <Tooltip content={<CustomTooltip />} />
+                                <Line
+                                    yAxisId="price"
+                                    type="monotone"
+                                    dataKey="closep"
+                                    stroke="hsl(var(--primary))"
+                                    strokeWidth={2}
+                                    dot={false}
+                                />
+                                <Bar
+                                    yAxisId="volume"
+                                    dataKey="volume"
+                                    fill="hsl(var(--secondary))"
+                                    className="opacity-50"
+                                />
+                            </ComposedChart>
                         )}
                     </ResponsiveContainer>
                 </div>

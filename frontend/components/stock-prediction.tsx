@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { StockAPI } from "@/lib/api"
+import { StockAPI } from "@/lib/api/stock"
 import { formatCurrency, formatPercentage } from "@/lib/utils/format"
 import type { PredictionData, PredictionPeriod } from "@/types/prediction"
 import { useMutation } from "@tanstack/react-query"

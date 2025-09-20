@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { StockAPI } from "@/lib/api"; // Make sure this path is correct
+import { StockAPI } from "@/lib/api/stock";
 import { formatVolume } from "@/lib/utils/format";
 import type { ChartTimeframe } from "@/types/stock";
 import { useQuery } from "@tanstack/react-query";
