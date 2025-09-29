@@ -27,7 +27,7 @@ services:
       - bd-stock-api
     environment:
       DB_ADDR: "postgres://stock_cast:${POSTGRES_PASSWORD}@postgres:5432/stock_cast?sslmode=disable"
-      PREDICTOR_URL: "http://predictor:8000"
+      PREDICTOR_URL: ${PREDICTOR_URL}
       JWT_SECRET: ${JWT_SECRET}
       SMTP_HOST: ${SMTP_HOST}
       SMTP_PORT: ${SMTP_PORT}

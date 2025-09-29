@@ -59,7 +59,6 @@ func (app *application) getPredictions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.logger.Info("PREDICTOR URL", app.cfg.predictorURL)
 	resp, err := http.Post(fmt.Sprintf("%s/api/predict", app.cfg.predictorURL), "application/json", bytes.NewBuffer(requestBody))
 	if err != nil {
 		app.serverErrorResponse(w, r, err)

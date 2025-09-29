@@ -52,7 +52,7 @@ func main() {
 		env:          env.GetString("ENVIRONMENT", "DEVELOPMENT"),
 		addr:         env.GetString("ADDR", ":8080"),
 		apiUrl:       env.GetString("API_URL", "localhost:8080"),
-		frontendURL:  env.GetString("FRONT_END_URL_PROD", "http://localhost:5173"),
+		frontendURL:  env.GetString("FRONT_END_URL_PROD", "http://localhost:3000"),
 		predictorURL: env.GetString("PREDICTOR_URL", "http://predictor:8000"),
 		smtp:         smtp,
 		limiter:      limiter,
