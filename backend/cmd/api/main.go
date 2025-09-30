@@ -30,7 +30,7 @@ func main() {
 
 	limiter := limiter{
 		rps:     env.GetInt("LIMITER_RPS", 2),
-		burst:   env.GetInt("LIMITER_BURST", 4),
+		burst:   env.GetInt("LIMITER_BURST", 8),
 		enabled: env.GetBool("LIMITER_ENABLED", true),
 	}
 
@@ -73,7 +73,7 @@ func main() {
 		store:         store,
 		wg:            sync.WaitGroup{},
 		authenticator: auth.NewJWTAuthenticator(jwt.secret, jwt.iss, jwt.iss),
-		mailer: mailer.New(config.smtp.host, config.smtp.port, config.smtp.username, config.smtp.password, config.smtp.sender),
+		mailer:        mailer.New(config.smtp.host, config.smtp.port, config.smtp.username, config.smtp.password, config.smtp.sender),
 	}
 
 	app.logger.Fatal(app.serve())

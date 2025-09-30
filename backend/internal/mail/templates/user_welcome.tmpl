@@ -7,8 +7,8 @@ Thank you for signing up for a StockCast account. We're excited to have you on b
 
 For your reference, your user ID number is {{.userID}}.
 
-Please send a request to the "POST /v1/users/activated" endpoint with following JSON body to activate your account.
-{"token":"{{.activationToken}}"}
+Please click the following link to activate your account:
+{{.frontendURL}}/activate-account?token={{.activationToken}}
 
 If you have any questions or need assistance, feel free to reply to this email.
 
@@ -43,6 +43,16 @@ The StockCast Team
             font-size: 1.5em;
             margin-bottom: 16px;
         }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            background-color: #4B0082;
+            border-radius: 4px;
+            text-decoration: none;
+        }
         .footer {
             margin-top: 32px;
             font-size: 0.95em;
@@ -60,13 +70,11 @@ The StockCast Team
             <strong style="font-size:1.1em;">{{.userID}}</strong>
         </p>
         <p>
-            Please send a request to the <strong style="font-size:1.1em;">"PUT /v1/users/activated"</strong> endpoint with following JSON body to activate your account:
+            Please click the button below to activate your account:
         </p>
-        <pre>
-            <code>
-                {"token":"{{.activationToken}}"}
-            </code>
-        </pre>
+        <p>
+            <a href="{{.frontendURL}}/activate-account?token={{.activationToken}}" class="btn">Activate Account</a>
+        </p>
         <p>If you have any questions or need assistance, just reply to this email and we'll be happy to help.</p>
         <div class="footer">
             Best regards,<br>

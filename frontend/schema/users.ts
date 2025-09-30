@@ -31,3 +31,8 @@ export const updatePasswordSchema = z.object({
     token: z.string()
 })
 export type updatePasswordType = z.infer<typeof updatePasswordSchema>
+
+export const activateUserSchema = z.object({
+    token: z.string()
+})
+export type activateUserType = z.infer<typeof activateUserSchema>

@@ -74,12 +74,12 @@ func (app *application) mount() http.Handler {
 
 	r.Route("/v1", func(r chi.Router) {
 		r.Route("/stocks", func(r chi.Router) {
-			r.Get("/", app.getStocks)
-			r.Get("/{tradingCodeID}", app.getStockByID)
-			r.Get("/{tradingCodeID}/history", app.getHistoryOfStockByID)
+			r.Get("/", app.requiredAuthenticatedUser(app.getStocks))
+			r.Get("/{tradingCodeID}", app.requiredAuthenticatedUser(app.getStockByID))
+			r.Get("/{tradingCodeID}/history", app.requiredAuthenticatedUser(app.getHistoryOfStockByID))
 		})
 		r.Route("/predict", func(r chi.Router) {
-			r.Post("/", app.getPredictions)
+			r.Post("/", app.requiredAuthenticatedUser(app.getPredictions))
 		})
 		r.Route("/users", func(r chi.Router) {
 			r.Post("/register", app.registerUserHandler)
