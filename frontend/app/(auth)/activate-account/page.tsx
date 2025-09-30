@@ -16,8 +16,9 @@ import {
 } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal } from 'lucide-react';
+import { Suspense } from 'react';
 
-export default function ActivateAccountPage() {
+function ActivateAccount() {
     const searchParams = useSearchParams();
     const token = searchParams.get('token');
 
@@ -108,5 +109,13 @@ export default function ActivateAccountPage() {
                 </CardFooter>
             </Card>
         </div>
+    );
+}
+
+export default function ActivateAccountPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <ActivateAccount />
+        </Suspense>
     );
 }
