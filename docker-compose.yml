@@ -34,6 +34,7 @@ services:
       SMTP_USERNAME: ${SMTP_USERNAME}
       SMTP_PASSWORD: ${SMTP_PASSWORD}
       SMTP_SENDER: ${SMTP_SENDER}
+      FRONTEND_PROD_URL: ${FRONTEND_URL_PROD}
 
   bd-stock-api:
     build:

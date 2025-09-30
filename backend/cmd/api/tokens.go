@@ -51,6 +51,7 @@ func (app *application) sendActivationEmailHandler(w http.ResponseWriter, r *htt
 		data := map[string]any{
 			"userID":          user.ID,
 			"activationToken": token.Plaintext,
+			"frontendURL":     app.cfg.frontendURL,
 		}
 
 		err := app.mailer.Send(user.Email, "user_welcome.tmpl", data)

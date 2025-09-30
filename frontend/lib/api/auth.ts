@@ -1,4 +1,4 @@
-import { forgotPasswordType, loginSchemaType, registerSchemaType, updatePasswordType } from "@/schema/users";
+import { activateUserType, forgotPasswordType, loginSchemaType, registerSchemaType, updatePasswordType } from "@/schema/users";
 import { postAPI } from "./utils";
 import { EnvelopeLoginUser, EnvelopeRegisterUser } from "@/types/api";
 
@@ -20,5 +20,9 @@ export class AuthAPI {
 
     static async updatePassword(payload: updatePasswordType): Promise<void> {
         return postAPI(`${USERS_PATH}/update-password`, payload)
+    }
+
+    static async activateUser(payload: activateUserType): Promise<void> {
+        return postAPI(`${USERS_PATH}/activate`, payload)
     }
 }
