@@ -1,7 +1,8 @@
-import type { EnvelopeStock, EnvelopeStocks, RealTimeResponse } from "@/types/api";
+import type { EnvelopeAllStocks, EnvelopeStock, EnvelopeStocks, RealTimeResponse } from "@/types/api";
 import { PredictionData, PredictionRequest, PredictionResponse } from "@/types/prediction";
 import type { Stock, StockHistoryPoint } from "@/types/stock";
-import { fetchAPI, fetchRealTimeAPI, postAPI } from "./utils";
+import { deleteAPI, fetchAPI, fetchRealTimeAPI, postAPI } from "./utils";
+import { favoriteStockType } from "@/schema/stocks";
 
 export class StockAPI {
     static async getAllStocks(): Promise<RealTimeResponse> {
@@ -35,6 +36,18 @@ export class StockAPI {
         const response = await postAPI<PredictionResponse>("/predict", request)
 
         return this.parsePredictionMessage(response.prediction)
+    }
+
+    static async createFavoriteStock(payload: favoriteStockType): Promise<void> {
+        return postAPI("/stocks/favorite", payload)
+    }
+    static async removeFavoriteStock(payload: favoriteStockType): Promise<void> {
+        console.log("PAYLOAD", payload);
+
+        return deleteAPI("/stocks/favorite", payload)
+    }
+    static async getFavoriteStocks(): Promise<EnvelopeAllStocks> {
+        return fetchAPI<EnvelopeAllStocks>("/stocks/favorite")
     }
 
     private static parsePredictionMessage(data: any): PredictionData {
@@ -92,4 +105,5 @@ export class StockAPI {
             },
         }
     }
+
 }

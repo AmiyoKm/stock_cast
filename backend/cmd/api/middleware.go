@@ -110,7 +110,6 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 			app.serverErrorResponse(w, r, err)
 			return
 		}
-		app.logger.Info(jwtToken.Raw, nil)
 		claims := jwtToken.Claims
 
 		sub, err := claims.GetSubject()

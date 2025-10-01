@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { SortButton } from "@/components/ui/sort-button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { StockAPI } from "@/lib/api/stock"
 import {
     calculatePriceChange,
     formatCurrency,
@@ -15,9 +16,11 @@ import {
 import { sortStocks, type SortDirection, type SortField } from "@/lib/utils/sort"
 import { useTableSort } from "@/lib/utils/table-handlers"
 import type { Stock } from "@/types/stock"
-import { Eye, TrendingDown, TrendingUp } from "lucide-react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { Eye, Star, TrendingDown, TrendingUp } from "lucide-react"
 import type React from "react"
 import { useState } from "react"
+import { toast } from "sonner"
 
 interface StockTableProps {
     stocks: Stock[]
@@ -27,14 +30,33 @@ interface StockTableProps {
 export function StockTable({ stocks, onStockClick }: StockTableProps) {
     const [sortField, setSortField] = useState<SortField>("tradingCode")
     const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
+    const queryClient = useQueryClient()
 
-    // Use reusable table sort handler
     const handleSort = useTableSort(
         sortField,
         setSortField,
         sortDirection,
         setSortDirection
     )
+
+    const createFavoriteMutation = useMutation({
+        mutationFn: StockAPI.createFavoriteStock,
+        onSuccess: () => {
+            toast.success("Success", {
+                description: "Stock added to favorites.",
+            })
+            return queryClient.invalidateQueries({ queryKey: ["favoriteStocks"] })
+        },
+        onError: (err) => {
+            toast.error("Error", {
+                description: err.message || "Could not add stock to favorites.",
+            })
+        },
+    })
+
+    const handleAddToFavorites = (tradingCode: string) => {
+        createFavoriteMutation.mutate({ trading_code: tradingCode })
+    }
 
     const sortedStocks = sortStocks(stocks, sortField, sortDirection)
 
@@ -95,7 +117,7 @@ export function StockTable({ stocks, onStockClick }: StockTableProps) {
                                         </div>
                                     </StockTermTooltip>
                                 </TableHead>
-                                <TableHead className="w-[50px]"></TableHead>
+                                <TableHead className="w-[100px]"></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -158,6 +180,17 @@ export function StockTable({ stocks, onStockClick }: StockTableProps) {
                                                     }}
                                                 >
                                                     <Eye className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-yellow-500"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        handleAddToFavorites(stock.tradingCode)
+                                                    }}
+                                                >
+                                                    <Star className="h-4 w-4" />
                                                 </Button>
                                             </div>
                                         </TableCell>

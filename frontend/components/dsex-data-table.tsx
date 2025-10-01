@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ErrorCard } from "@/components/ui/error-card"
 import { LoadingCard } from "@/components/ui/loading-card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { StockAPI } from "@/lib/api/stock"
 import {
     calculatePriceChange,
     formatCurrency,
@@ -16,9 +17,11 @@ import {
 import { sortStocks, type SortDirection, type SortField } from "@/lib/utils/sort"
 import { useTableSort } from "@/lib/utils/table-handlers"
 import type { Stock } from "@/types/stock"
-import { Eye, TrendingDown, TrendingUp } from "lucide-react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { Eye, Star, TrendingDown, TrendingUp } from "lucide-react"
 import type React from "react"
 import { useState } from "react"
+import { toast } from "sonner"
 import { SortButton } from "./ui/sort-button"
 
 interface DSEXDataTableProps {
@@ -30,11 +33,11 @@ interface DSEXDataTableProps {
 export function DSEXDataTable({ onStockClick, searchQuery = "", stocks = [] }: DSEXDataTableProps) {
     const [sortField, setSortField] = useState<SortField>("tradingCode")
     const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
+    const queryClient = useQueryClient()
 
     const isLoading = stocks.length === 0
     const error: Error | null = null
 
-    // Use reusable table sort handler
     const handleSort = useTableSort(
         sortField,
         setSortField,
@@ -42,18 +45,35 @@ export function DSEXDataTable({ onStockClick, searchQuery = "", stocks = [] }: D
         setSortDirection
     )
 
+    const createFavoriteMutation = useMutation({
+        mutationFn: StockAPI.createFavoriteStock,
+        onSuccess: () => {
+            toast.success("Success", {
+                description: "Stock added to favorites.",
+            })
+            return queryClient.invalidateQueries({ queryKey: ["favoriteStocks"] })
+        },
+        onError: (err) => {
+            toast.error("Error", {
+                description: err.message || "Could not add stock to favorites.",
+            })
+        },
+    })
+
+    const handleAddToFavorites = (tradingCode: string) => {
+        createFavoriteMutation.mutate({ trading_code: tradingCode })
+    }
+
     if (!stocks || stocks.length === 0) {
         return <LoadingCard title="DSEX Market Data" />
     }
 
-    // Filter stocks based on searchQuery
     const filteredStocks = searchQuery.trim() === ""
         ? stocks
         : stocks.filter((stock) =>
             stock.tradingCode.toLowerCase().includes(searchQuery.toLowerCase())
         );
 
-    // Use the reusable sort function
     const sortedStocks = sortStocks(filteredStocks, sortField, sortDirection)
 
     if (isLoading) {
@@ -121,7 +141,7 @@ export function DSEXDataTable({ onStockClick, searchQuery = "", stocks = [] }: D
                                         </div>
                                     </StockTermTooltip>
                                 </TableHead>
-                                <TableHead className="w-[50px]"></TableHead>
+                                <TableHead className="w-[100px]"></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -197,6 +217,17 @@ export function DSEXDataTable({ onStockClick, searchQuery = "", stocks = [] }: D
                                                     }}
                                                 >
                                                     <Eye className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-yellow-500"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        handleAddToFavorites(stock.tradingCode)
+                                                    }}
+                                                >
+                                                    <Star className="h-4 w-4" />
                                                 </Button>
                                             </div>
                                         </TableCell>

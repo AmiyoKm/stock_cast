@@ -1,10 +1,11 @@
 "use client"
 
-import type { Stock } from "@/types/stock"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { TrendingUp, TrendingDown, } from "lucide-react"
-import { formatCurrency, calculatePriceChange, getPriceChangeColor } from "@/lib/utils/format"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { calculatePriceChange, formatCurrency, getPriceChangeColor } from "@/lib/utils/format"
+import type { Stock } from "@/types/stock"
+import { Star, TrendingDown, TrendingUp } from "lucide-react"
 
 interface StockDetailCardProps {
     stock: Stock
@@ -14,6 +15,20 @@ export function StockDetailCard({ stock }: StockDetailCardProps) {
     const priceChange = calculatePriceChange(stock.ltp, stock.ycp)
     const changeColor = getPriceChangeColor(priceChange.isPositive)
 
+    const handleAddToFavorites = async () => {
+        try {
+            // TODO: Replace with actual API call
+            // await fetch("/api/v1/favorites", {
+            //     method: "POST",
+            //     headers: { "Content-Type": "application/json" },
+            //     body: JSON.stringify({ stockId: stock.id }),
+            // });
+            console.log(`Adding stock ${stock.id} to favorites...`)
+        } catch (err) {
+            console.error("Failed to add to favorites", err)
+        }
+    };
+
 
     return (
         <Card>
@@ -21,6 +36,9 @@ export function StockDetailCard({ stock }: StockDetailCardProps) {
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <CardTitle className="font-serif text-2xl">{stock.tradingCode}</CardTitle>
+                        <Button variant="ghost" size="icon" onClick={handleAddToFavorites}>
+                            <Star className="h-5 w-5" />
+                        </Button>
                     </div>
                     <Badge variant={priceChange.isPositive ? "default" : "destructive"} className="gap-1">
                         {priceChange.isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
