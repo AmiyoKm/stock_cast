@@ -77,6 +77,12 @@ func (app *application) mount() http.Handler {
 			r.Get("/", app.requiredAuthenticatedUser(app.getStocks))
 			r.Get("/{tradingCodeID}", app.requiredAuthenticatedUser(app.getStockByID))
 			r.Get("/{tradingCodeID}/history", app.requiredAuthenticatedUser(app.getHistoryOfStockByID))
+
+			r.Route("/favorite", func(r chi.Router) {
+				r.Get("/", app.requiredAuthenticatedUser(app.getFavoriteStocks))
+				r.Post("/", app.requiredAuthenticatedUser(app.createFavoriteStock))
+				r.Delete("/", app.requiredAuthenticatedUser(app.removeFavoriteStock))
+			})
 		})
 		r.Route("/predict", func(r chi.Router) {
 			r.Post("/", app.requiredAuthenticatedUser(app.getPredictions))

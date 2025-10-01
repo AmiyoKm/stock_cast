@@ -21,3 +21,4 @@ export type EnvelopeRegisterUser = {
 export type EnvelopeLoginUser = {
     authentication_token: string
 }
+

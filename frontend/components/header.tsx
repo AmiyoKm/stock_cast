@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Menu, Search, User } from "lucide-react"
+import { Menu, Search, Star, User } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { ModeToggle } from "./mode-toggle"
@@ -58,6 +58,10 @@ export function Header({ onSearch }: HeaderProps) {
                             />
                         </div>
 
+                        <Button variant="ghost" size="icon" className="hover:bg-accent transition-colors" onClick={() => router.push('/favorite-stocks')}>
+                            <Star className="h-5 w-5" />
+                        </Button>
+
                         <Button variant="ghost" size="icon" className="hover:bg-accent transition-colors">
                             <ModeToggle />
                         </Button>
@@ -87,6 +91,10 @@ export function Header({ onSearch }: HeaderProps) {
                                     </div>
 
                                     <div className="space-y-2">
+                                        <Button variant="ghost" className="w-full justify-start gap-2" onClick={() => router.push('/favorite-stocks')}>
+                                            <Star className="h-4 w-4" />
+                                            Favorite Stocks
+                                        </Button>
                                         <Button variant="ghost" className="w-full justify-start gap-2">
                                             <User className="h-4 w-4" />
                                             Profile

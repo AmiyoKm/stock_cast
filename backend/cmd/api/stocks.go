@@ -67,3 +67,82 @@ func (app *application) getStockByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func (app *application) getFavoriteStocks(w http.ResponseWriter, r *http.Request) {
+	user := app.contextGetUser(r)
+	ctx := r.Context()
+
+	stocks, err := app.store.Stocks.GetFavoriteStocks(ctx, user.ID)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	if err := app.writeJSON(w, http.StatusOK, envelope{"stocks": stocks}, nil); err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+}
+
+type favoriteStockPayload struct {
+	TradingCode string `json:"trading_code" validate:"required"`
+}
+
+func (app *application) createFavoriteStock(w http.ResponseWriter, r *http.Request) {
+	var payload favoriteStockPayload
+
+	if err := app.readJSON(w, r, &payload); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	if err := validate.Struct(payload); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	user := app.contextGetUser(r)
+	ctx := r.Context()
+
+	app.logger.Info("USER", user)
+
+	err := app.store.Stocks.CreateFavoriteStock(ctx, payload.TradingCode, user.ID)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	if err := app.writeJSON(w, http.StatusOK, envelope{"success": true}, nil); err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+}
+func (app *application) removeFavoriteStock(w http.ResponseWriter, r *http.Request) {
+	var payload favoriteStockPayload
+
+	if err := app.readJSON(w, r, &payload); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	app.logger.Info("PAYLOAD", payload)
+	if err := validate.Struct(payload); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	user := app.contextGetUser(r)
+	ctx := r.Context()
+
+	err := app.store.Stocks.RemoveFavoriteStock(ctx, payload.TradingCode, user.ID)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	if err := app.writeJSON(w, http.StatusOK, envelope{"success": true}, nil); err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+}

@@ -22,6 +22,9 @@ type StockRepo interface {
 	Get(ctx context.Context) ([]*Stock, error)
 	GetByID(ctx context.Context, tradingCode string, start time.Time, end time.Time) ([]*Stock, error)
 	GetCurrentByID(ctx context.Context, tradingCode string) (*Stock, error)
+	GetFavoriteStocks(ctx context.Context, userID int64) ([]*Stock, error)
+	CreateFavoriteStock(ctx context.Context, tradingCode string, userID int64) error
+	RemoveFavoriteStock(ctx context.Context, tradingCode string, userID int64) error
 }
 
 type PredictionRepo interface {
