@@ -29,8 +29,8 @@ func main() {
 	}
 
 	limiter := limiter{
-		rps:     env.GetInt("LIMITER_RPS", 2),
-		burst:   env.GetInt("LIMITER_BURST", 8),
+		rps:     env.GetInt("LIMITER_RPS", 6),
+		burst:   env.GetInt("LIMITER_BURST", 16),
 		enabled: env.GetBool("LIMITER_ENABLED", true),
 	}
 
@@ -59,14 +59,14 @@ func main() {
 		jwt:          jwt,
 	}
 
-	db, err := db.New(config.db.addr, config.db.maxConnOpen, config.db.maxIdleConn, config.db.maxIdleTime)
+	dbConn, err := db.New(config.db.addr, config.db.maxConnOpen, config.db.maxIdleConn, config.db.maxIdleTime)
 	if err != nil {
 		logger.Fatal(err)
 	}
-	defer db.Close()
+	defer dbConn.Close()
 	logger.Info("DB connection pool established")
 
-	store := store.NewStorage(db)
+	store := store.NewStorage(dbConn)
 	app := &application{
 		cfg:           config,
 		logger:        logger,
