@@ -107,19 +107,19 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 
 		jwtToken, err := app.authenticator.ValidateToken(token)
 		if err != nil {
-			app.serverErrorResponse(w, r, err)
+			app.invalidAuthenticationTokenResponse(w, r)
 			return
 		}
 		claims := jwtToken.Claims
 
 		sub, err := claims.GetSubject()
 		if err != nil {
-			app.serverErrorResponse(w, r, err)
+			app.invalidAuthenticationTokenResponse(w, r)
 			return
 		}
 		userID, err := strconv.ParseInt(sub, 10, 64)
 		if err != nil {
-			app.serverErrorResponse(w, r, err)
+			app.invalidAuthenticationTokenResponse(w, r)
 			return
 		}
 

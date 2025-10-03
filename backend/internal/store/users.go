@@ -65,7 +65,7 @@ func (p *password) Matches(plaintextPassword string) (bool, error) {
 
 func (s *UserStore) Get(ctx context.Context, userID int64) (*User, error) {
 	query := `
-		SELECT id , created_at , name , email , password_hash , activated , version
+		SELECT id , created_at , name , email , password_hash , activated , version, updated_at
 		FROM users WHERE id = $1
 	`
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeDuration)
@@ -80,6 +80,7 @@ func (s *UserStore) Get(ctx context.Context, userID int64) (*User, error) {
 		&user.Password.hash,
 		&user.Activated,
 		&user.Version,
+		&user.UpdatedAt,
 	)
 	if err != nil {
 		switch {
