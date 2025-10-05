@@ -110,3 +110,5 @@ secrets.env
 logs/
 tmp/
 .eslintcache
+
+secrets.yaml

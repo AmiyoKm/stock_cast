@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+data:
+  ENVIRONMENT: "production"
+  ADDR: ":8080"
+  API_URL: "http://<your-backend-external-ip>"
+  FRONT_END_URL_PROD: "https://<your-vercel-app-url>"
+  PREDICTOR_URL: "34.131.7.156"
+
+
+  LIMITER_RPS: "6"
+  LIMITER_BURST: "16"
+  LIMITER_ENABLED: "true"
+
+  JWT_EXPIRY: "72"
+  JWT_ISSUER: "stock_cast"
+
+  SMTP_HOST: "smtp.gmail.com"
+  SMTP_PORT: "587"
+  SMTP_SENDER: "stockcast87@gmail.com"

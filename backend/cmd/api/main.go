@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -21,8 +22,16 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		logger.Info(err)
 	}
+	dbUser := env.GetString("DB_USER", "stock_cast")
+	dbPassword := env.GetString("DB_PASSWORD", "password")
+	dbHost := env.GetString("DB_HOST", "localhost")
+	port := env.GetString("DB_PORT", "5432")
+	dbName := env.GetString("DB_NAME", "stock_cast")
+
+	dbAddr := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=disable", dbUser, dbPassword, dbHost, port, dbName)
+
 	dbConfig := DbConfig{
-		addr:        env.GetString("DB_ADDR", "postgres://stock_cast:password@localhost/stock_cast?sslmode=disable"),
+		addr:        dbAddr,
 		maxConnOpen: env.GetInt("MAX_CONN_OPEN", 60),
 		maxIdleConn: env.GetInt("MAX_IDLE_CONN", 60),
 		maxIdleTime: env.GetString("MAX_IDLE_TIME", "15m"),

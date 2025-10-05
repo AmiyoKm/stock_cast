@@ -5,7 +5,7 @@ ifneq (,$(wildcard .env))
 endif
 MIGRATIONS_PATH=./cmd/migrations
 
-DB_DSN ?= postgres://stock_cast:password@localhost:5432/stock_cast?sslmode=disable
+DB_DSN ?= postgres://stock_cast:Password@18@localhost:5432/stock_cast?sslmode=disable
 
 
 # ========================================================================================== #
