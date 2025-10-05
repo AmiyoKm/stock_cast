@@ -1,0 +1,40 @@
+# k8s/predictor-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: predictor-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: predictor
+  template:
+    metadata:
+      labels:
+        app: predictor
+    spec:
+      containers:
+      - name: predictor-app
+        image: asia-south2-docker.pkg.dev/able-folio-466619-j4/stock-cast-repo/predictor:1.0.0
+        ports:
+        - containerPort: 8000
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: predictor-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: predictor
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8000

@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # Set starting point (adjust if needed)
-start_year=2023
-start_month=10
+start_year=2024
+start_month=9
 
 # Current date components
 current_year=2025
-current_month=9
+current_month=10
 
 # Loop month by month until current date
 while [ $((start_year * 12 + start_month)) -le $((current_year * 12 + current_month)) ]; do
@@ -19,7 +19,8 @@ while [ $((start_year * 12 + start_month)) -le $((current_year * 12 + current_mo
     echo "Fetching data for $start_date to $end_date"
 
     # Run the command (note: corrected flag syntax to --start and --end)
-    docker-compose run --rm make-db ./main --start=$start_date --end=$end_date
+    # docker-compose run --rm make-db ./main --start=$start_date --end=$end_date
+    ./make-db/make-db --start=$start_date --end=$end_date
 
     # Increment month
     start_month=$((start_month + 1))

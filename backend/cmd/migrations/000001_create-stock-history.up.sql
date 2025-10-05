@@ -1,4 +1,4 @@
-CREATE TABLE stock_history (
+CREATE TABLE IF NOT EXISTS stock_history (
   id SERIAL PRIMARY KEY,
   date DATE NOT NULL,
   trading_code VARCHAR(20) NOT NULL,

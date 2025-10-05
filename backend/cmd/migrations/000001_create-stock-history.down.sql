@@ -1,1 +1,1 @@
-DROP TABLE stock_history;
+DROP TABLE IF EXISTS stock_history;

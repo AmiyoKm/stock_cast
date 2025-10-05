@@ -113,11 +113,22 @@ func convert(raw RawStockRow) (StockRow, error) {
 	}, nil
 }
 
-func main() {
-	dbAddr := os.Getenv("DB_ADDR")
-	if dbAddr == "" {
-		dbAddr = "postgres://stock_cast:password@postgres:5432/stock_cast?sslmode=disable"
+func getEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
 	}
+	return fallback
+}
+
+func main() {
+	dbUser := getEnv("DB_USER", "stock_cast")
+	dbPassword := getEnv("DB_PASSWORD", "")
+	dbHost := getEnv("DB_HOST", "localhost")
+	dbPort := getEnv("DB_PORT", "5432")
+	dbName := getEnv("DB_NAME", "stock_cast")
+
+	dbAddr := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=disable", dbUser, dbPassword, dbHost, dbPort, dbName)
+
 	db, err := sql.Open("postgres", dbAddr)
 	if err != nil {
 		panic(err)
@@ -131,8 +142,8 @@ func main() {
 
 	var start string
 	var end string
-	flag.StringVar(&start, "start", "2025-08-25", "Start date in YYYY-MM-DD format")
-	flag.StringVar(&end, "end", "2025-09-07", "End date in YYYY-MM-DD format")
+	flag.StringVar(&start, "start", time.Now().Format("2006-01-02"), "Start date in YYYY-MM-DD format")
+	flag.StringVar(&end, "end", time.Now().Format("2006-01-02"), "End date in YYYY-MM-DD format")
 	flag.Parse()
 	fmt.Println("Fetching data from", bdStockApiUrl, "for date range", start, "to", end)
 
@@ -151,7 +162,7 @@ func main() {
 		panic(err)
 	}
 	fmt.Println("Rows received:", len(result.Data))
-	
+
 	defer db.Close()
 
 	stmt, err := db.Prepare(`INSERT INTO stock_history (date, trading_code, ltp, high, low, openp, closep, ycp, trade, value, volume)

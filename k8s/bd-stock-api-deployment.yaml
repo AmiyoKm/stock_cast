@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bd-stock-api-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bd-stock-api
+  template:
+    metadata:
+      labels:
+        app: bd-stock-api
+    spec:
+      containers:
+      - name: bd-stock-api-app
+        image: asia-south2-docker.pkg.dev/able-folio-466619-j4/stock-cast-repo/bd-stock-api:1.0.0
+        ports:
+        - containerPort: 4000
+        env:
+        - name: DSE_BASE_URL
+          value: "https://www.dsebd.org"
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "250m"
+            memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bd-stock-api-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: bd-stock-api
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 4000
