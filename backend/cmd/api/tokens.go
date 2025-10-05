@@ -87,7 +87,7 @@ func (app *application) userLoginHandler(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		switch err {
 		case store.ErrorNotFound:
-			app.invalidCredentialsResponse(w, r)
+			app.notFoundResponse(w, r)
 			return
 		default:
 			app.serverErrorResponse(w, r, err)

@@ -112,3 +112,4 @@ tmp/
 .eslintcache
 
 secrets.yaml
+.prod.env

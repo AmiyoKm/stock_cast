@@ -24,11 +24,17 @@ func main() {
 	}
 	dbUser := env.GetString("DB_USER", "stock_cast")
 	dbPassword := env.GetString("DB_PASSWORD", "password")
-	dbHost := env.GetString("DB_HOST", "localhost")
-	port := env.GetString("DB_PORT", "5432")
 	dbName := env.GetString("DB_NAME", "stock_cast")
 
-	dbAddr := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=disable", dbUser, dbPassword, dbHost, port, dbName)
+	var dbAddr string
+	if connectionName := env.GetString("CLOUD_SQL_CONNECTION_NAME", ""); connectionName != "" {
+		dbAddr = fmt.Sprintf("user=%s password=%s dbname=%s host=/cloudsql/%s",
+			dbUser, dbPassword, dbName, connectionName)
+	} else {
+		dbHost := env.GetString("DB_HOST", "localhost")
+		port := env.GetString("DB_PORT", "5432")
+		dbAddr = fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=disable", dbUser, dbPassword, dbHost, port, dbName)
+	}
 
 	dbConfig := DbConfig{
 		addr:        dbAddr,
@@ -59,9 +65,9 @@ func main() {
 	config := Config{
 		db:           dbConfig,
 		env:          env.GetString("ENVIRONMENT", "DEVELOPMENT"),
-		addr:         env.GetString("ADDR", ":8080"),
+		addr:         fmt.Sprintf(":%s", env.GetString("PORT", "8080")),
 		apiUrl:       env.GetString("API_URL", "localhost:8080"),
-		frontendURL:  env.GetString("FRONT_END_URL_PROD", "http://localhost:3000"),
+		frontendURL:  env.GetString("FRONTEND_PROD_URL", "http://localhost:3000"),
 		predictorURL: env.GetString("PREDICTOR_URL", "http://predictor:8000"),
 		smtp:         smtp,
 		limiter:      limiter,
