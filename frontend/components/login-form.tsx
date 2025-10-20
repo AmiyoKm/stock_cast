@@ -42,7 +42,9 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
             router.push("/")
         },
         onError: (error) => {
-            toast.error(error.message || "An error occurred")
+            toast.error(error.message || "An error occurred", {
+                description: "Create an Account if you haven't",
+            })
         }
     })
 

@@ -1,0 +1,38 @@
+name: Import stock history daily
+
+on:
+  schedule:
+    # runs every day at 23:00 UTC — convert to your local timezone if needed
+    - cron: '0 23 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    env:
+      PGUSER: ${{ secrets.PGUSER }}
+      PGPASSWORD: ${{ secrets.PGPASSWORD }}
+      PGDATABASE: ${{ secrets.PGDATABASE }}
+      PGHOST: ${{ secrets.PGHOST }}
+      PGPORT: ${{ secrets.PGPORT }}
+      PGSSLMODE: ${{ secrets.PGSSLMODE }}
+      PGCHANNELBINDING: ${{ secrets.PGCHANNELBINDING }}
+      BD_STOCK_API_URL: ${{ secrets.BD_STOCK_API_URL }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.24'
+
+      - name: Build importer
+        working-directory: ./make-db
+        run: |
+          go build -o /tmp/make-db .
+
+      - name: Run importer
+        run: |
+          /tmp/make-db

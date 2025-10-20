@@ -46,12 +46,7 @@ export function StockTable({ stocks, onStockClick }: StockTableProps) {
                 description: "Stock added to favorites.",
             })
             return queryClient.invalidateQueries({ queryKey: ["favoriteStocks"] })
-        },
-        onError: (err) => {
-            toast.error("Error", {
-                description: err.message || "Could not add stock to favorites.",
-            })
-        },
+        }
     })
 
     const handleAddToFavorites = (tradingCode: string) => {

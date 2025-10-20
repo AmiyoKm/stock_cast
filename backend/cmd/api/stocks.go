@@ -105,8 +105,6 @@ func (app *application) createFavoriteStock(w http.ResponseWriter, r *http.Reque
 	user := app.contextGetUser(r)
 	ctx := r.Context()
 
-	app.logger.Info("USER", user)
-
 	err := app.store.Stocks.CreateFavoriteStock(ctx, payload.TradingCode, user.ID)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)

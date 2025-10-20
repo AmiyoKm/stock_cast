@@ -13,6 +13,7 @@ var (
 	ErrDuplicateEmail    = errors.New("duplicate email")
 	ErrDuplicateUsername = errors.New("duplicate username")
 	ErrEditConflict      = errors.New("edit conflict")
+	ErrDuplicateFavoriteStock = errors.New("duplicate favorite stock")
 )
 
 type Storage struct {

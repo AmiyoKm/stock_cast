@@ -121,19 +121,17 @@ func getEnv(key, fallback string) string {
 }
 
 func main() {
-	dbUser := getEnv("DB_USER", "stock_cast")
-	dbPassword := getEnv("DB_PASSWORD", "password")
-	dbName := getEnv("DB_NAME", "stock_cast")
+	dbUser := getEnv("PGUSER", "stock_cast")
+	dbPassword := getEnv("PGPASSWORD", "password")
+	dbName := getEnv("PGDATABASE", "stock_cast")
 
-	var dbAddr string
-	if connectionName := getEnv("CLOUD_SQL_CONNECTION_NAME", ""); connectionName != "" {
-		dbAddr = fmt.Sprintf("user=%s password=%s dbname=%s host=/cloudsql/%s",
-			dbUser, dbPassword, dbName, connectionName)
-	} else {
-		dbHost := getEnv("DB_HOST", "localhost")
-		port := getEnv("DB_PORT", "5432")
-		dbAddr = fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=disable", dbUser, dbPassword, dbHost, port, dbName)
-	}
+	dbHost := getEnv("PGHOST", "localhost")
+	port := getEnv("PGPORT", "5432")
+
+	sslMode := getEnv("PGSSLMODE", "disable")
+	channelBinding := getEnv("PGCHANNELBINDING", "disable")
+
+	dbAddr := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=%s channel_binding=%s", dbUser, dbPassword, dbHost, port, dbName, sslMode, channelBinding)
 
 	db, err := sql.Open("postgres", dbAddr)
 	if err != nil {

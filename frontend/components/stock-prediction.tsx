@@ -31,15 +31,13 @@ export function StockPrediction({ tradingCode, currentPrice }: StockPredictionPr
 
     useEffect(() => {
         predictionMutation.mutate()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [tradingCode])
+    }, [tradingCode, predictionMutation])
 
     const handlePeriodChange = (period: PredictionPeriod) => {
         predictionMutation.mutate()
         setSelectedPeriod(period)
     }
 
-    // Extract mutation states
     const loading = predictionMutation.isPending
     const error = predictionMutation.error
         ? predictionMutation.error instanceof Error

@@ -3,9 +3,12 @@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { StockAPI } from "@/lib/api/stock"
 import { calculatePriceChange, formatCurrency, getPriceChangeColor } from "@/lib/utils/format"
 import type { Stock } from "@/types/stock"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Star, TrendingDown, TrendingUp } from "lucide-react"
+import { toast } from "sonner"
 
 interface StockDetailCardProps {
     stock: Stock
@@ -14,21 +17,21 @@ interface StockDetailCardProps {
 export function StockDetailCard({ stock }: StockDetailCardProps) {
     const priceChange = calculatePriceChange(stock.ltp, stock.ycp)
     const changeColor = getPriceChangeColor(priceChange.isPositive)
+    const queryClient = useQueryClient()
 
-    const handleAddToFavorites = async () => {
-        try {
-            // TODO: Replace with actual API call
-            // await fetch("/api/v1/favorites", {
-            //     method: "POST",
-            //     headers: { "Content-Type": "application/json" },
-            //     body: JSON.stringify({ stockId: stock.id }),
-            // });
-            console.log(`Adding stock ${stock.id} to favorites...`)
-        } catch (err) {
-            console.error("Failed to add to favorites", err)
-        }
-    };
+    const createFavoriteMutation = useMutation({
+        mutationFn: StockAPI.createFavoriteStock,
+        onSuccess: () => {
+            toast.success("Success", {
+                description: "Stock added to favorites.",
+            })
+            return queryClient.invalidateQueries({ queryKey: ["favoriteStocks"] })
+        },
+    })
 
+    const handleAddToFavorites = () => {
+        createFavoriteMutation.mutate({ trading_code: stock.tradingCode })
+    }
 
     return (
         <Card>
