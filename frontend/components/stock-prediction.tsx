@@ -31,13 +31,13 @@ export function StockPrediction({ tradingCode, currentPrice }: StockPredictionPr
 
     useEffect(() => {
         predictionMutation.mutate()
-    }, [tradingCode])
+    }, [tradingCode, predictionMutation])
 
     const handlePeriodChange = (period: PredictionPeriod) => {
         predictionMutation.mutate()
         setSelectedPeriod(period)
     }
-    
+
     const loading = predictionMutation.isPending
     const error = predictionMutation.error
         ? predictionMutation.error instanceof Error
