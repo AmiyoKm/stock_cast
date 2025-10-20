@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+const favorite_stocks_pkey_error = `pq: duplicate key value violates unique constraint "favorite_stocks_pkey"`
+
 type Stock struct {
 	ID          int64     `json:"id"`
 	Date        time.Time `json:"date"`
@@ -165,7 +167,12 @@ func (s *StockStore) CreateFavoriteStock(ctx context.Context, tradingCode string
 
 	err := s.db.QueryRowContext(ctx, query, userID, tradingCode).Err()
 	if err != nil {
-		return err
+		switch err.Error() {
+		case favorite_stocks_pkey_error:
+			return ErrDuplicateFavoriteStock
+		default:
+			return err
+		}
 	}
 
 	return nil

@@ -22,19 +22,17 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		logger.Info(err)
 	}
-	dbUser := env.GetString("DB_USER", "stock_cast")
-	dbPassword := env.GetString("DB_PASSWORD", "password")
-	dbName := env.GetString("DB_NAME", "stock_cast")
 
-	var dbAddr string
-	if connectionName := env.GetString("CLOUD_SQL_CONNECTION_NAME", ""); connectionName != "" {
-		dbAddr = fmt.Sprintf("user=%s password=%s dbname=%s host=/cloudsql/%s",
-			dbUser, dbPassword, dbName, connectionName)
-	} else {
-		dbHost := env.GetString("DB_HOST", "localhost")
-		port := env.GetString("DB_PORT", "5432")
-		dbAddr = fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=disable", dbUser, dbPassword, dbHost, port, dbName)
-	}
+	pgHost := env.GetString("PGHOST", "localhost")
+	pgUser := env.GetString("PGUSER", "stock_cast")
+	pgPasswordLocal := env.GetString("PGPASSWORD", "password")
+	pgDatabase := env.GetString("PGDATABASE", "stock_cast")
+	pgPort := env.GetString("PGPORT", "5432")
+	sslmode := env.GetString("PGSSLMODE", "disable")
+	channelBinding := env.GetString("PGCHANNELBINDING", "disable")
+
+	dbAddr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s channel_binding=%s",
+		pgHost, pgPort, pgUser, pgPasswordLocal, pgDatabase, sslmode, channelBinding)
 
 	dbConfig := DbConfig{
 		addr:        dbAddr,

@@ -3,10 +3,12 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { useAuth } from "@/lib/hooks/useAuth"
 import { Menu, Search, Star, User } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { ModeToggle } from "./mode-toggle"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
 
 interface HeaderProps {
     onSearch?: (_query: string) => void
@@ -15,6 +17,12 @@ interface HeaderProps {
 export function Header({ onSearch }: HeaderProps) {
     const [isSearchFocused, setIsSearchFocused] = useState(false)
     const router = useRouter()
+    const { isLoggedIn, logout } = useAuth()
+
+    const handleLogout = () => {
+        logout()
+        router.push('/login')
+    }
 
     return (
         <header className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
@@ -58,16 +66,32 @@ export function Header({ onSearch }: HeaderProps) {
                             />
                         </div>
 
-                        <Button variant="ghost" size="icon" className="hover:bg-accent transition-colors" onClick={() => router.push('/favorite-stocks')}>
-                            <Star className="h-5 w-5" />
-                        </Button>
+                        {isLoggedIn ? (
+                            <>
+                                <Button variant="ghost" size="icon" className="hover:bg-accent transition-colors" onClick={() => router.push('/favorite-stocks')}>
+                                    <Star className="h-5 w-5" />
+                                </Button>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="hover:bg-accent transition-colors">
+                                            <User className="h-5 w-5" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </>
+                        ) : (
+                            <>
+                                <Button variant="ghost" onClick={() => router.push('/login')}>Login</Button>
+                                <Button onClick={() => router.push('/signup')}>Signup</Button>
+                            </>
+                        )}
+
 
                         <Button variant="ghost" size="icon" className="hover:bg-accent transition-colors">
                             <ModeToggle />
-                        </Button>
-
-                        <Button variant="ghost" size="icon" className="hover:bg-accent transition-colors">
-                            <User className="h-5 w-5" />
                         </Button>
                     </div>
 
@@ -91,14 +115,27 @@ export function Header({ onSearch }: HeaderProps) {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Button variant="ghost" className="w-full justify-start gap-2" onClick={() => router.push('/favorite-stocks')}>
-                                            <Star className="h-4 w-4" />
-                                            Favorite Stocks
-                                        </Button>
-                                        <Button variant="ghost" className="w-full justify-start gap-2">
-                                            <User className="h-4 w-4" />
-                                            Profile
-                                        </Button>
+                                        {isLoggedIn ? (
+                                            <>
+                                                <Button variant="ghost" className="w-full justify-start gap-2" onClick={() => router.push('/favorite-stocks')}>
+                                                    <Star className="h-4 w-4" />
+                                                    Favorite Stocks
+                                                </Button>
+                                                <Button variant="ghost" className="w-full justify-start gap-2" onClick={handleLogout}>
+                                                    <User className="h-4 w-4" />
+                                                    Logout
+                                                </Button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Button variant="ghost" className="w-full justify-start gap-2" onClick={() => router.push('/login')}>
+                                                    Login
+                                                </Button>
+                                                <Button className="w-full justify-start gap-2" onClick={() => router.push('/signup')}>
+                                                    Signup
+                                                </Button>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </SheetContent>

@@ -1,4 +1,5 @@
 import axios from "axios";
+import { toast } from "sonner";
 
 const API_BASE_URL = process.env.NODE_ENV === "development"
     ? "http://localhost:8080/v1"
@@ -8,16 +9,11 @@ const axiosInstance = axios.create({
     baseURL: API_BASE_URL,
 });
 
-const publicEndpoints = ['/users/login', '/users/register', '/users/forgot-password'];
-
 axiosInstance.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem("token");
-        const isPublicEndpoint = publicEndpoints.some(endpoint =>
-            config.url?.includes(endpoint)
-        );
 
-        if (token && !isPublicEndpoint) {
+        if (token) {
             config.headers["Authorization"] = `Bearer ${token}`;
         }
         return config;
@@ -32,8 +28,15 @@ axiosInstance.interceptors.response.use(
     (error) => {
         if (error.response && error.response.status === 401) {
             localStorage.removeItem("token");
-            window.location.href = '/signup';
+            toast.error("Session expired", {
+                description: "Your session has expired. Please log in again.",
+                action: {
+                    label: "Go to Login",
+                    onClick: () => window.location.href = '/login',
+                },
+            });
         }
+
         return Promise.reject(error);
     }
 );
@@ -46,30 +49,30 @@ export const realtimeAxiosInstance = axios.create({
     baseURL: REALTIME_API_BASE_URL,
 });
 
-realtimeAxiosInstance.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem("token");
-        if (token) {
-            config.headers["Authorization"] = `Bearer ${token}`;
-        } else {
-            window.location.href = '/login';
-        }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
-    }
-);
+// realtimeAxiosInstance.interceptors.request.use(
+//     (config) => {
+//         const token = localStorage.getItem("token");
+//         if (token) {
+//             config.headers["Authorization"] = `Bearer ${token}`;
+//         } else {
+//             window.location.href = '/login';
+//         }
+//         return config;
+//     },
+//     (error) => {
+//         return Promise.reject(error);
+//     }
+// );
 
-realtimeAxiosInstance.interceptors.response.use(
-    (response) => response,
-    (error) => {
-        if (error.response && error.response.status === 401) {
-            localStorage.removeItem("token");
-            window.location.href = '/login';
-        }
-        return Promise.reject(error);
-    }
-);
+// realtimeAxiosInstance.interceptors.response.use(
+//     (response) => response,
+//     (error) => {
+//         if (error.response && error.response.status === 401) {
+//             localStorage.removeItem("token");
+//             window.location.href = '/login';
+//         }
+//         return Promise.reject(error);
+//     }
+// );
 
 export default axiosInstance;

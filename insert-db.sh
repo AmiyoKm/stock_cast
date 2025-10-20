@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Set starting point (adjust if needed)
-start_year=2024
-start_month=9
+start_year=2023
+start_month=11
 
 # Current date components
 current_year=2025
