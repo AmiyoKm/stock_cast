@@ -31,7 +31,7 @@ export function StockPrediction({ tradingCode, currentPrice }: StockPredictionPr
 
     useEffect(() => {
         predictionMutation.mutate()
-    }, [tradingCode, predictionMutation])
+    }, [tradingCode])
 
     const handlePeriodChange = (period: PredictionPeriod) => {
         predictionMutation.mutate()
