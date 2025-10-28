@@ -1,28 +1,33 @@
-"use client"
+"use client";
 
-import { ErrorBoundary, ErrorFallback } from "@/components/error-boundary"
-import { Header } from "@/components/header"
-import { StockDetailSkeleton } from "@/components/loading-skeleton"
-import { StockDetailCard } from "@/components/stock-detail-card"
-import { StockMetrics } from "@/components/stock-metrics"
-import { StockPrediction } from "@/components/stock-prediction"
-import { StockPriceChart } from "@/components/stock-price-chart"
-import { Button } from "@/components/ui/button"
-import { VolumeChart } from "@/components/volume-chart"
-import { StockAPI } from "@/lib/api/stock"
-import { useQuery } from "@tanstack/react-query"
-import { ArrowLeft } from "lucide-react"
-import { useParams, useRouter } from "next/navigation"
+import { ErrorBoundary, ErrorFallback } from "@/components/error-boundary";
+import { Header } from "@/components/header";
+import { StockDetailSkeleton } from "@/components/loading-skeleton";
+import { StockDetailCard } from "@/components/stock-detail-card";
+import { StockMetrics } from "@/components/stock-metrics";
+import { StockPrediction } from "@/components/stock-prediction/index";
+import { StockPriceChart } from "@/components/stock-price-chart";
+import { Button } from "@/components/ui/button";
+import { VolumeChart } from "@/components/volume-chart";
+import { StockAPI } from "@/lib/api/stock";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
 
 export default function StockDetailPage() {
-    const params = useParams()
-    const router = useRouter()
-    const tradingCode = params.tradingCode as string
+    const params = useParams();
+    const router = useRouter();
+    const tradingCode = params.tradingCode as string;
 
-    const { data: stock, isLoading, isError, error } = useQuery({
+    const {
+        data: stock,
+        isLoading,
+        isError,
+        error,
+    } = useQuery({
         queryKey: ["stocks", tradingCode],
-        queryFn: () => StockAPI.getStockByTradingCode(tradingCode)
-    })
+        queryFn: () => StockAPI.getStockByTradingCode(tradingCode),
+    });
 
     if (isLoading) {
         return (
@@ -30,7 +35,12 @@ export default function StockDetailPage() {
                 <Header />
                 <main className="container mx-auto px-4 py-8">
                     <div className="flex items-center gap-4 mb-8">
-                        <Button variant="ghost" size="sm" onClick={() => router.push("/")} className="gap-2">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => router.push("/")}
+                            className="gap-2"
+                        >
                             <ArrowLeft className="h-4 w-4" />
                             Back
                         </Button>
@@ -42,11 +52,11 @@ export default function StockDetailPage() {
                     <StockDetailSkeleton />
                 </main>
             </div>
-        )
+        );
     }
 
     function handleRetry(): void {
-        router.refresh()
+        router.refresh();
     }
     if (isError || !stock) {
         return (
@@ -54,15 +64,23 @@ export default function StockDetailPage() {
                 <Header />
                 <main className="container mx-auto px-4 py-8">
                     <div className="flex items-center gap-4 mb-8">
-                        <Button variant="ghost" size="sm" onClick={() => router.push("/")} className="gap-2">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => router.push("/")}
+                            className="gap-2"
+                        >
                             <ArrowLeft className="h-4 w-4" />
                             Back
                         </Button>
                     </div>
-                    <ErrorFallback error={error || new Error("Stock not found")} resetError={handleRetry} />
+                    <ErrorFallback
+                        error={error || new Error("Stock not found")}
+                        resetError={handleRetry}
+                    />
                 </main>
             </div>
-        )
+        );
     }
 
     return (
@@ -83,22 +101,38 @@ export default function StockDetailPage() {
                                 Back
                             </Button>
                             <div>
-                                <h1 className="font-serif text-2xl sm:text-3xl font-bold">{stock.tradingCode}</h1>
-                                <p className="text-muted-foreground text-sm sm:text-base">Stock Details & Analysis</p>
+                                <h1 className="font-serif text-2xl sm:text-3xl font-bold">
+                                    {stock.tradingCode}
+                                </h1>
+                                <p className="text-muted-foreground text-sm sm:text-base">
+                                    Stock Details & Analysis
+                                </p>
                             </div>
                         </div>
                         <div className="flex items-center space-x-2">
                             <div className="h-2 w-2 bg-primary rounded-full animate-pulse"></div>
-                            <span className="text-sm text-primary font-medium">Live</span>
+                            <span className="text-sm text-primary font-medium">
+                                Live
+                            </span>
                         </div>
                     </div>
 
                     <div className="grid gap-6 lg:grid-cols-3">
                         <div className="lg:col-span-2 space-y-6">
                             <StockDetailCard stock={stock} />
-                            <StockPrediction tradingCode={stock.tradingCode} currentPrice={stock.ltp} />
-                            <StockPriceChart tradingCode={stock.tradingCode} currentPrice={stock.ltp} previousClose={stock.ycp} />
-                            <VolumeChart tradingCode={stock.tradingCode} timeframe="1M" />
+                            <StockPrediction
+                                tradingCode={stock.tradingCode}
+                                currentPrice={stock.ltp}
+                            />
+                            <StockPriceChart
+                                tradingCode={stock.tradingCode}
+                                currentPrice={stock.ltp}
+                                previousClose={stock.ycp}
+                            />
+                            <VolumeChart
+                                tradingCode={stock.tradingCode}
+                                timeframe="1M"
+                            />
                         </div>
                         <div className="space-y-6">
                             <StockMetrics stock={stock} />
@@ -107,5 +141,5 @@ export default function StockDetailPage() {
                 </main>
             </div>
         </ErrorBoundary>
-    )
+    );
 }
