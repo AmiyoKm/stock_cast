@@ -10,7 +10,7 @@ import type { PredictionPeriod } from "@/types/prediction";
 
 interface StockPredictionSelectorProps {
     selectedPeriod: PredictionPeriod;
-    handlePeriodChange: (period: PredictionPeriod) => void;
+    handlePeriodChange: (_: PredictionPeriod) => void;
     loading: boolean;
 }
 

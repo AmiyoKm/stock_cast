@@ -5,7 +5,6 @@ import type {
     RealTimeResponse,
 } from "@/types/api";
 import {
-    PredictionData,
     PredictionRequest,
     StockPredictionResponse,
 } from "@/types/prediction";
@@ -67,7 +66,6 @@ export class StockAPI {
     static async removeFavoriteStock(
         payload: favoriteStockType,
     ): Promise<void> {
-        console.log("PAYLOAD", payload);
 
         return deleteAPI("/stocks/favorite", payload);
     }
