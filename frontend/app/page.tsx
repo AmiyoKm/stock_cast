@@ -21,6 +21,44 @@ export default function HomePage() {
     const [searchQuery, setSearchQuery] = useState("")
     const [activeTab, setActiveTab] = useState("live")
 
+    const getMarketStatus = () => {
+        const now = new Date();
+        const options: Intl.DateTimeFormatOptions = {
+            timeZone: 'Asia/Dhaka',
+            weekday: 'short',
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: false,
+        };
+        const dhakaTimeParts = new Intl.DateTimeFormat('en-US', options).formatToParts(now);
+
+        const getPart = (part: string) => dhakaTimeParts.find(p => p.type === part)?.value;
+
+        const dayOfWeek = getPart('weekday');
+        const hour = parseInt(getPart('hour') || '0', 10);
+        const minute = parseInt(getPart('minute') || '0', 10);
+
+        if (dayOfWeek === 'Fri' || dayOfWeek === 'Sat') {
+            return { isLive: false, message: 'Market Closed' };
+        }
+
+        const marketOpenHour = 10;
+        const marketCloseHour = 14;
+        const marketCloseMinute = 30;
+
+        const isMarketOpen =
+            (hour > marketOpenHour || (hour === marketOpenHour && minute >= 0)) &&
+            (hour < marketCloseHour || (hour === marketCloseHour && minute < marketCloseMinute));
+
+        if (isMarketOpen) {
+            return { isLive: true, message: 'Market is Live' };
+        }
+
+        return { isLive: false, message: 'Market Closed' };
+    };
+
+    const marketStatus = getMarketStatus();
+
     // Fetch all three data sources at once
     const { data: stocks = [], isLoading: isLoadingLive, error: liveError } = useQuery({
         queryKey: ["stock", "current"],
@@ -119,8 +157,10 @@ export default function HomePage() {
                             </p>
                         </div>
                         <div className="flex items-center space-x-2">
-                            <div className="h-2 w-2 bg-primary rounded-full animate-pulse"></div>
-                            <span className="text-sm text-primary font-medium">Live</span>
+                            <div className={`h-2 w-2 rounded-full ${marketStatus.isLive ? 'bg-primary animate-pulse' : 'bg-red-500'}`}></div>
+                            <span className={`text-sm font-medium ${marketStatus.isLive ? 'text-primary' : 'text-red-500'}`}>
+                                {marketStatus.message}
+                            </span>
                         </div>
                     </div>
 

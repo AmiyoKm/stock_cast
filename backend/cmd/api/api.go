@@ -87,7 +87,6 @@ func (app *application) mount() http.Handler {
 		r.Route("/predict", func(r chi.Router) {
 			r.Post("/", app.getPredictions)
 		})
-		
 		r.Route("/users", func(r chi.Router) {
 			r.Post("/register", app.registerUserHandler)
 			r.Post("/login", app.userLoginHandler)

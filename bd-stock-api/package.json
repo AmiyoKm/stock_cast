@@ -2,11 +2,12 @@
   "name": "turf-script",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/src/index.js",
+  "main": "dist/src/app.js",
   "scripts": {
     "build": "tsc",
     "start-server": "node --max-old-space-size=4096 --enable-source-maps dist/src/app.js",
     "dev": "tsc-watch --noClear --onSuccess 'npm run start-server'",
+    "vercel-build": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
