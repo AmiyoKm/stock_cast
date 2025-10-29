@@ -81,7 +81,8 @@ func main() {
 
 	store := store.NewStorage(dbConn)
 	app := &application{
-		cfg:           config,
+		cfg: config,
+
 		logger:        logger,
 		store:         store,
 		wg:            sync.WaitGroup{},
