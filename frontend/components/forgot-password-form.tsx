@@ -26,6 +26,7 @@ import { useMutation } from "@tanstack/react-query";
 import { AuthAPI } from "@/lib/api/auth";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { handleToastError } from "@/lib/utils/toast-helpers";
 
 export function ForgotPasswordForm({
 	className,
@@ -45,9 +46,7 @@ export function ForgotPasswordForm({
 			toast.success("Password reset link sent to your email!");
 			router.push("/login");
 		},
-		onError: (error) => {
-			toast.error(error.message || "Your account is not activated");
-		},
+		onError: handleToastError
 	});
 
 	function onSubmit(values: forgotPasswordType) {

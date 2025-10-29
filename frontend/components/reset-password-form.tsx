@@ -16,10 +16,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/
 import { cn } from "@/lib/utils"
 import React from "react"
 import { updatePasswordSchema, updatePasswordType } from "@/schema/users"
-import { useMutation } from "@tanstack/react-query"
-import { AuthAPI } from "@/lib/api/auth"
-import { toast } from "sonner"
-import { useRouter } from "next/navigation"
+import { handleToastError } from "@/lib/utils/toast-helpers";
+import { useMutation } from "@tanstack/react-query";
+import { AuthAPI } from "@/lib/api/auth";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export function ResetPasswordForm({ className, ...props }: React.ComponentProps<"div">) {
     const router = useRouter();
@@ -31,16 +32,14 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentProps<
         },
     })
 
-    const { isPending, mutate } = useMutation<unknown, Error, updatePasswordType>({
-        mutationFn: AuthAPI.updatePassword,
-        onSuccess: () => {
-            toast.success("Password updated successfully!")
-            router.push("/login")
-        },
-        onError: (error) => {
-            toast.error(error.message || "An error occurred")
-        }
-    })
+const { isPending, mutate } = useMutation<unknown, Error, updatePasswordType>({
+    mutationFn: AuthAPI.updatePassword,
+    onSuccess: () => {
+        toast.success("Password updated successfully!");
+        router.push("/login");
+    },
+    onError: handleToastError,
+});
 
     function onSubmit(values: updatePasswordType) {
         mutate(values)

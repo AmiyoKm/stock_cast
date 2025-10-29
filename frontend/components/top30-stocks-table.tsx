@@ -17,6 +17,7 @@ import {
 } from "@/lib/utils/format"
 import { sortStocks, type SortDirection, type SortField } from "@/lib/utils/sort"
 import { useTableSort } from "@/lib/utils/table-handlers"
+import { handleToastError } from "@/lib/utils/toast-helpers"
 import type { Stock } from "@/types/stock"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Eye, Star, TrendingDown, TrendingUp } from "lucide-react"
@@ -53,11 +54,7 @@ export function Top30StocksTable({ onStockClick, searchQuery = "", stocks = [] }
             })
             return queryClient.invalidateQueries({ queryKey: ["favoriteStocks"] })
         },
-        onError: (err) => {
-            toast.error("Error", {
-                description: err.message || "Could not add stock to favorites.",
-            })
-        },
+        onError: handleToastError
     })
 
     const handleAddToFavorites = (tradingCode: string) => {
