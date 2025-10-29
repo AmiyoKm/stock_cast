@@ -1,232 +1,244 @@
-"use client"
+"use client";
 
-import { DSEXDataTable } from "@/components/dsex-data-table"
-import { ErrorBoundary, ErrorFallback } from "@/components/error-boundary"
-import { Header } from "@/components/header"
-import { MarketOverviewSkeleton, StockTableSkeleton } from "@/components/loading-skeleton"
-import { MarketOverview } from "@/components/market-overview"
-import { StockGlossary } from "@/components/stock-glossary"
-import { StockTable } from "@/components/stock-table"
-import { Top30StocksTable } from "@/components/top30-stocks-table"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { StockAPI } from "@/lib/api/stock"
-import { transformRawStock } from "@/lib/utils"
-import { calculatePriceChange } from "@/lib/utils/format"
-import { useQuery } from "@tanstack/react-query"
-import { useRouter } from "next/navigation"
-import { useMemo, useState } from "react"
+import { DSEXDataTable } from "@/components/dsex-data-table";
+import { ErrorBoundary, ErrorFallback } from "@/components/error-boundary";
+import { Header } from "@/components/header";
+import {
+	MarketOverviewSkeleton,
+	StockTableSkeleton,
+} from "@/components/loading-skeleton";
+import { MarketOverview } from "@/components/market-overview";
+import { StockGlossary } from "@/components/stock-glossary";
+import { StockTable } from "@/components/stock-table";
+import { Top30StocksTable } from "@/components/top30-stocks-table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { StockAPI } from "@/lib/api/stock";
+import { transformRawStock } from "@/lib/utils";
+import { calculatePriceChange } from "@/lib/utils/format";
+import { getMarketStatus } from "@/lib/time";
+import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 
 export default function HomePage() {
-    const router = useRouter()
-    const [searchQuery, setSearchQuery] = useState("")
-    const [activeTab, setActiveTab] = useState("live")
+	const router = useRouter();
+	const [searchQuery, setSearchQuery] = useState("");
+	const [activeTab, setActiveTab] = useState("live");
 
-    const getMarketStatus = () => {
-        const now = new Date();
-        const options: Intl.DateTimeFormatOptions = {
-            timeZone: 'Asia/Dhaka',
-            weekday: 'short',
-            hour: 'numeric',
-            minute: 'numeric',
-            hour12: false,
-        };
-        const dhakaTimeParts = new Intl.DateTimeFormat('en-US', options).formatToParts(now);
+	const marketStatus = getMarketStatus();
 
-        const getPart = (part: string) => dhakaTimeParts.find(p => p.type === part)?.value;
+	// Fetch all three data sources at once
+	const {
+		data: stocks = [],
+		isLoading: isLoadingLive,
+		error: liveError,
+	} = useQuery({
+		queryKey: ["stock", "current"],
+		queryFn: async () => {
+			const res = await StockAPI.getAllStocks();
+			if (res?.success && Array.isArray(res.data)) {
+				return res.data.map(transformRawStock);
+			}
+			return [];
+		},
+	});
 
-        const dayOfWeek = getPart('weekday');
-        const hour = parseInt(getPart('hour') || '0', 10);
-        const minute = parseInt(getPart('minute') || '0', 10);
+	const {
+		data: top30Stocks = [],
+		isLoading: isLoadingTop30,
+		error: top30Error,
+	} = useQuery({
+		queryKey: ["stocks", "top30"],
+		queryFn: async () => {
+			const res = await StockAPI.getTop30Stocks();
+			if (res?.success && Array.isArray(res.data)) {
+				return res.data.map(transformRawStock);
+			}
+			return [];
+		},
+	});
 
-        if (dayOfWeek === 'Fri' || dayOfWeek === 'Sat') {
-            return { isLive: false, message: 'Market Closed' };
-        }
+	const {
+		data: dsexStocks = [],
+		isLoading: isLoadingDSEX,
+		error: dsexError,
+	} = useQuery({
+		queryKey: ["stocks", "dsex"],
+		queryFn: async () => {
+			const res = await StockAPI.getDSEXData();
+			if (res?.success && Array.isArray(res.data)) {
+				return res.data.map(transformRawStock);
+			}
+			return [];
+		},
+	});
 
-        const marketOpenHour = 10;
-        const marketCloseHour = 14;
-        const marketCloseMinute = 30;
+	// Combine loading states and errors
+	const isLoading = isLoadingLive || isLoadingTop30 || isLoadingDSEX;
+	const error = liveError || top30Error || dsexError;
 
-        const isMarketOpen =
-            (hour > marketOpenHour || (hour === marketOpenHour && minute >= 0)) &&
-            (hour < marketCloseHour || (hour === marketCloseHour && minute < marketCloseMinute));
+	// Filter stocks using useMemo for performance and simplicity
+	const filteredStocks = useMemo(() => {
+		if (searchQuery.trim() === "") return stocks;
+		return stocks.filter((stock) =>
+			stock.tradingCode.toLowerCase().includes(searchQuery.toLowerCase()),
+		);
+	}, [searchQuery, stocks]);
 
-        if (isMarketOpen) {
-            return { isLive: true, message: 'Market is Live' };
-        }
+	const handleSearch = (query: string) => {
+		setSearchQuery(query);
+	};
 
-        return { isLive: false, message: 'Market Closed' };
-    };
+	const handleStockClick = (tradingCode: string) => {
+		router.push(`/stock/${tradingCode}`);
+	};
 
-    const marketStatus = getMarketStatus();
+	const handleRetry = () => {
+		window.location.reload();
+	};
 
-    // Fetch all three data sources at once
-    const { data: stocks = [], isLoading: isLoadingLive, error: liveError } = useQuery({
-        queryKey: ["stock", "current"],
-        queryFn: async () => {
-            const res = await StockAPI.getAllStocks()
-            if (res?.success && Array.isArray(res.data)) {
-                return res.data.map(transformRawStock)
-            }
-            return []
-        },
-    })
+	const marketStats = stocks.reduce(
+		(acc, stock) => {
+			const priceChange = calculatePriceChange(stock.ltp, stock.ycp);
+			if (priceChange.change > 0) {
+				acc.gainers++;
+			} else if (priceChange.change < 0) {
+				acc.losers++;
+			} else {
+				acc.unchanged++;
+			}
+			return acc;
+		},
+		{ gainers: 0, losers: 0, unchanged: 0 },
+	);
 
-    const { data: top30Stocks = [], isLoading: isLoadingTop30, error: top30Error } = useQuery({
-        queryKey: ["stocks", "top30"],
-        queryFn: async () => {
-            const res = await StockAPI.getTop30Stocks()
-            if (res?.success && Array.isArray(res.data)) {
-                return res.data.map(transformRawStock)
-            }
-            return []
-        },
-    })
+	if (error) {
+		return (
+			<div className="min-h-screen bg-background">
+				<Header onSearch={handleSearch} />
+				<main className="container mx-auto px-4 py-8">
+					<ErrorFallback error={error} resetError={handleRetry} />
+				</main>
+			</div>
+		);
+	}
 
-    const { data: dsexStocks = [], isLoading: isLoadingDSEX, error: dsexError } = useQuery({
-        queryKey: ["stocks", "dsex"],
-        queryFn: async () => {
-            const res = await StockAPI.getDSEXData()
-            if (res?.success && Array.isArray(res.data)) {
-                return res.data.map(transformRawStock)
-            }
-            return []
-        },
-    })
+	return (
+		<ErrorBoundary>
+			<div className="min-h-screen bg-background">
+				<Header onSearch={handleSearch} />
 
-    // Combine loading states and errors
-    const isLoading = isLoadingLive || isLoadingTop30 || isLoadingDSEX
-    const error = liveError || top30Error || dsexError
+				<main className="container mx-auto px-4 py-8 space-y-8">
+					<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+						<div>
+							<h2 className="font-serif text-2xl sm:text-3xl font-bold">
+								Market Dashboard
+							</h2>
+							<p className="text-muted-foreground text-sm sm:text-base">
+								Real-time stock prices and market data • Last
+								updated: {new Date().toLocaleTimeString()}
+							</p>
+						</div>
+						<div className="flex items-center space-x-2">
+							<div
+								className={`h-2 w-2 rounded-full ${marketStatus.isLive ? "bg-primary animate-pulse" : "bg-red-500"}`}
+							></div>
+							<span
+								className={`text-sm font-medium ${marketStatus.isLive ? "text-primary" : "text-red-500"}`}
+							>
+								{marketStatus.message}
+							</span>
+						</div>
+					</div>
 
-    // Filter stocks using useMemo for performance and simplicity
-    const filteredStocks = useMemo(() => {
-        if (searchQuery.trim() === "") return stocks
-        return stocks.filter((stock) =>
-            stock.tradingCode.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-    }, [searchQuery, stocks])
+					{isLoading ? (
+						<>
+							<MarketOverviewSkeleton />
+							<StockTableSkeleton />
+						</>
+					) : (
+						<>
+							<MarketOverview
+								totalStocks={stocks.length}
+								gainers={marketStats.gainers}
+								losers={marketStats.losers}
+								unchanged={marketStats.unchanged}
+							/>
 
-    const handleSearch = (query: string) => {
-        setSearchQuery(query)
-    }
+							<Tabs
+								value={activeTab}
+								onValueChange={setActiveTab}
+								className="w-full"
+							>
+								<TabsList className="grid w-full grid-cols-3 mb-6">
+									<TabsTrigger
+										value="live"
+										className="font-medium"
+									>
+										Live Market Data
+									</TabsTrigger>
+									<TabsTrigger
+										value="top30"
+										className="font-medium"
+									>
+										Top 30 Stocks
+									</TabsTrigger>
+									<TabsTrigger
+										value="dsex"
+										className="font-medium"
+									>
+										DSEX Data
+									</TabsTrigger>
+								</TabsList>
 
-    const handleStockClick = (tradingCode: string) => {
-        router.push(`/stock/${tradingCode}`)
-    }
+								<TabsContent value="live" className="space-y-4">
+									<StockTable
+										stocks={filteredStocks}
+										onStockClick={handleStockClick}
+									/>
+									{filteredStocks.length === 0 &&
+										searchQuery && (
+											<div className="text-center py-12">
+												<div className="max-w-md mx-auto">
+													<h3 className="font-semibold text-lg mb-2">
+														No stocks found
+													</h3>
+													<p className="text-muted-foreground mb-4">
+														No stocks found matching
+														&quot;{searchQuery}
+														&quot;. Try adjusting
+														your search terms.
+													</p>
+												</div>
+											</div>
+										)}
+								</TabsContent>
 
-    const handleRetry = () => {
-        window.location.reload()
-    }
+								<TabsContent
+									value="top30"
+									className="space-y-4"
+								>
+									<Top30StocksTable
+										onStockClick={handleStockClick}
+										searchQuery={searchQuery}
+										stocks={top30Stocks}
+									/>
+								</TabsContent>
 
-    const marketStats = stocks.reduce(
-        (acc, stock) => {
-            const priceChange = calculatePriceChange(stock.ltp, stock.ycp)
-            if (priceChange.change > 0) {
-                acc.gainers++
-            } else if (priceChange.change < 0) {
-                acc.losers++
-            } else {
-                acc.unchanged++
-            }
-            return acc
-        },
-        { gainers: 0, losers: 0, unchanged: 0 },
-    )
+								<TabsContent value="dsex" className="space-y-4">
+									<DSEXDataTable
+										onStockClick={handleStockClick}
+										searchQuery={searchQuery}
+										stocks={dsexStocks}
+									/>
+								</TabsContent>
+							</Tabs>
 
-    if (error) {
-        return (
-            <div className="min-h-screen bg-background">
-                <Header onSearch={handleSearch} />
-                <main className="container mx-auto px-4 py-8">
-                    <ErrorFallback error={error} resetError={handleRetry} />
-                </main>
-            </div>
-        )
-    }
-
-    return (
-        <ErrorBoundary>
-            <div className="min-h-screen bg-background">
-                <Header onSearch={handleSearch} />
-
-                <main className="container mx-auto px-4 py-8 space-y-8">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div>
-                            <h2 className="font-serif text-2xl sm:text-3xl font-bold">Market Dashboard</h2>
-                            <p className="text-muted-foreground text-sm sm:text-base">
-                                Real-time stock prices and market data • Last updated: {new Date().toLocaleTimeString()}
-                            </p>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <div className={`h-2 w-2 rounded-full ${marketStatus.isLive ? 'bg-primary animate-pulse' : 'bg-red-500'}`}></div>
-                            <span className={`text-sm font-medium ${marketStatus.isLive ? 'text-primary' : 'text-red-500'}`}>
-                                {marketStatus.message}
-                            </span>
-                        </div>
-                    </div>
-
-                    {isLoading ? (
-                        <>
-                            <MarketOverviewSkeleton />
-                            <StockTableSkeleton />
-                        </>
-                    ) : (
-                        <>
-                            <MarketOverview
-                                totalStocks={stocks.length}
-                                gainers={marketStats.gainers}
-                                losers={marketStats.losers}
-                                unchanged={marketStats.unchanged}
-                            />
-
-                            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                                <TabsList className="grid w-full grid-cols-3 mb-6">
-                                    <TabsTrigger value="live" className="font-medium">
-                                        Live Market Data
-                                    </TabsTrigger>
-                                    <TabsTrigger value="top30" className="font-medium">
-                                        Top 30 Stocks
-                                    </TabsTrigger>
-                                    <TabsTrigger value="dsex" className="font-medium">
-                                        DSEX Data
-                                    </TabsTrigger>
-                                </TabsList>
-
-                                <TabsContent value="live" className="space-y-4">
-                                    <StockTable stocks={filteredStocks} onStockClick={handleStockClick} />
-                                    {filteredStocks.length === 0 && searchQuery && (
-                                        <div className="text-center py-12">
-                                            <div className="max-w-md mx-auto">
-                                                <h3 className="font-semibold text-lg mb-2">No stocks found</h3>
-                                                <p className="text-muted-foreground mb-4">
-                                                    No stocks found matching &quot;{searchQuery}&quot;. Try adjusting your search terms.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    )}
-                                </TabsContent>
-
-                                <TabsContent value="top30" className="space-y-4">
-                                    <Top30StocksTable
-                                        onStockClick={handleStockClick}
-                                        searchQuery={searchQuery}
-                                        stocks={top30Stocks}
-                                    />
-                                </TabsContent>
-
-                                <TabsContent value="dsex" className="space-y-4">
-                                    <DSEXDataTable
-                                        onStockClick={handleStockClick}
-                                        searchQuery={searchQuery}
-                                        stocks={dsexStocks}
-                                    />
-                                </TabsContent>
-                            </Tabs>
-
-                            <StockGlossary />
-                        </>
-                    )}
-                </main>
-            </div>
-        </ErrorBoundary>
-    )
+							<StockGlossary />
+						</>
+					)}
+				</main>
+			</div>
+		</ErrorBoundary>
+	);
 }
