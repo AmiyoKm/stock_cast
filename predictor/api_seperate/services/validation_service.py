@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List
 from fastapi import HTTPException
 from ..models.stock import Stock
 from ..config.prediction_config import MIN_HISTORY_LENGTH, SUPPORTED_HORIZONS

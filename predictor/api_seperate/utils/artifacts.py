@@ -43,10 +43,12 @@ def load_stock_artifacts(
         raise FileNotFoundError(f"Scaler not found for {trading_code} at {scaler_path}")
     scaler = joblib.load(scaler_path)
 
-    # Load models for all supported horizons
+    # Load models for all supported horizons that exist on disk
     models = {}
+    # We check for a few common horizons, but the prediction service will decide if the required one is present.
+    horizons_to_check = [1, 3, 7]
 
-    for horizon in SUPPORTED_HORIZONS:
+    for horizon in horizons_to_check:
         # The model is named `lstm_{SCRIP}_seq{SEQ_LEN}_nahead{N}.keras`
         model_path = os.path.join(
             stock_dir, f"lstm_{trading_code}_seq60_nahead{horizon}.keras"

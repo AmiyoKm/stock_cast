@@ -20,15 +20,17 @@ class Stock(BaseModel):
 
 class StockDataRequest(BaseModel):
     tradingCode: str = Field(..., description="Trading code/symbol of the stock")
-    nhead: int = Field(..., description="Number of days to predict (1, 3, or 7)")
+    nhead: int = Field(
+        ..., description="Number of days to predict (1, 3, 7, 15, or 30)"
+    )
     history: List[Stock] = Field(
         ..., description="Historical stock data (at least 60 days)"
     )
 
     @validator("nhead")
     def validate_nhead(cls, v):
-        if v not in [1, 3, 7]:
-            raise ValueError("nhead must be 1, 3, or 7")
+        if v not in [1, 3, 7, 15, 30]:
+            raise ValueError("nhead must be 1, 3, 7, 15, or 30")
         return v
 
     @validator("history")
