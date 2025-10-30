@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Set starting point (adjust if needed)
-start_year=2023
-start_month=11
+start_year=2025
+start_month=10
 
 # Current date components
 current_year=2025
@@ -20,7 +20,7 @@ while [ $((start_year * 12 + start_month)) -le $((current_year * 12 + current_mo
 
     # Run the command (note: corrected flag syntax to --start and --end)
     # docker-compose run --rm make-db ./main --start=$start_date --end=$end_date
-    ./make-db/make-db --start=$start_date --end=$end_date
+    ./make-db/main --start=$start_date --end=$end_date
 
     # Increment month
     start_month=$((start_month + 1))

@@ -2,13 +2,13 @@ from datetime import datetime, timedelta
 import numpy as np
 from typing import Dict, List, Tuple, Any
 
-from ..models.stock import Stock
-from ..utils.artifacts import (
+from models.stock import Stock
+from utils.artifacts import (
     load_stock_artifacts,
     get_available_trading_codes as get_codes,
 )
-from ..utils.preprocessing import prepare_data
-from ..config.prediction_config import SUPPORTED_HORIZONS
+from utils.preprocessing import prepare_data
+from config.prediction_config import SUPPORTED_HORIZONS
 
 
 def inverse_transform_target(arr, scaler):
@@ -117,11 +117,9 @@ def get_prediction(
 
 
 def is_valid_trading_code(trading_code: str) -> bool:
-    """Check if artifacts for the given trading code exist."""
     available_codes = get_codes()
     return trading_code in available_codes
 
 
 def get_available_trading_codes(limit: int = 5) -> List[str]:
-    """Get a list of available trading codes."""
     return get_codes()[:limit]

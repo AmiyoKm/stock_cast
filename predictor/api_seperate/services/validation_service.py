@@ -1,13 +1,15 @@
-from typing import List
 from fastapi import HTTPException
-from ..models.stock import Stock
-from ..config.prediction_config import MIN_HISTORY_LENGTH, SUPPORTED_HORIZONS
+from models.stock import Stock
+from config.prediction_config import MIN_HISTORY_LENGTH, SUPPORTED_HORIZONS
+from services.prediction_service import (
+    is_valid_trading_code,
+    get_available_trading_codes,
+)
 
 
 def validate_history_length(
-    history: List[Stock], min_length: int = MIN_HISTORY_LENGTH
+    history: list[Stock], min_length: int = MIN_HISTORY_LENGTH
 ) -> None:
-    """Validate that we have enough historical data"""
     if len(history) < min_length:
         raise HTTPException(
             status_code=400,
@@ -16,11 +18,6 @@ def validate_history_length(
 
 
 def validate_trading_code(trading_code: str) -> None:
-    """Validate that the trading code exists by checking for available artifacts."""
-    from ..services.prediction_service import (
-        is_valid_trading_code,
-        get_available_trading_codes,
-    )
 
     if not is_valid_trading_code(trading_code):
         raise HTTPException(
@@ -30,7 +27,6 @@ def validate_trading_code(trading_code: str) -> None:
 
 
 def validate_prediction_horizon(nhead: int) -> None:
-    """Validate that the prediction horizon is supported"""
     if nhead not in SUPPORTED_HORIZONS:
         raise HTTPException(
             status_code=400,
@@ -38,12 +34,10 @@ def validate_prediction_horizon(nhead: int) -> None:
         )
 
 
-def validate_prediction_request(history: List[Stock], trading_code: str) -> List[Stock]:
-    """Validate request data and return sorted history"""
-    # Check if we have enough data
+def validate_prediction_request(history: list[Stock], trading_code: str) -> list[Stock]:
     validate_history_length(history)
+    #validate_trading_code(trading_code)`
 
-    # Sort history by date
     sorted_history = sorted(history, key=lambda x: x.date)
 
     return sorted_history
