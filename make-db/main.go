@@ -121,15 +121,15 @@ func getEnv(key, fallback string) string {
 }
 
 func main() {
-	dbUser := getEnv("PGUSER", "neondb_owner")
-	dbPassword := getEnv("PGPASSWORD", "npg_vrET5q9YUMlw")
-	dbName := getEnv("PGDATABASE", "neondb")
+	dbUser := getEnv("PGUSER", "stock_cast")
+	dbPassword := getEnv("PGPASSWORD", "password")
+	dbName := getEnv("PGDATABASE", "stock_cast")
 
-	dbHost := getEnv("PGHOST", "ep-square-pond-a1bfw3d0-pooler.ap-southeast-1.aws.neon.tech")
+	dbHost := getEnv("PGHOST", "localhost")
 	port := getEnv("PGPORT", "5432")
 
-	sslMode := getEnv("PGSSLMODE", "require")
-	channelBinding := getEnv("PGCHANNELBINDING", "require")
+	sslMode := getEnv("PGSSLMODE", "disable")
+	channelBinding := getEnv("PGCHANNELBINDING", "disable")
 
 	dbAddr := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=%s channel_binding=%s", dbUser, dbPassword, dbHost, port, dbName, sslMode, channelBinding)
 
