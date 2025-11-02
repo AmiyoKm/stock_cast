@@ -5,8 +5,6 @@ import type {
 	RealTimeResponse,
 } from "@/types/api";
 import {
-	PredictionModelType,
-	PredictionPeriod,
 	PredictionRequest,
 	StockPredictionResponse,
 } from "@/types/prediction";

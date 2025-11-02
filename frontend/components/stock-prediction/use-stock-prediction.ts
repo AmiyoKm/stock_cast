@@ -28,6 +28,7 @@ export function useStockPrediction(tradingCode: string, currentPrice: number) {
 			nhead,
 			model,
 		});
+		//eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [nhead, model]);
 
 	const handlePeriodChange = (nhead: PredictionPeriod) => {
