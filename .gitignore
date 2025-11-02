@@ -113,3 +113,5 @@ tmp/
 
 secrets.yaml
 .prod.env
+artifacts
+artifacts_unified
