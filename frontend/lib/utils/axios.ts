@@ -6,6 +6,8 @@ const API_BASE_URL =
 		? "http://localhost:8080/v1"
 		: process.env.NEXT_PUBLIC_API_BASE_URL + "/v1";
 
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL + "/v1";
+
 const axiosInstance = axios.create({
 	baseURL: API_BASE_URL,
 });
@@ -46,6 +48,9 @@ const REALTIME_API_BASE_URL =
 	process.env.NODE_ENV === "development"
 		? "http://localhost:4000/v1/dse"
 		: process.env.NEXT_PUBLIC_REALTIME_API_BASE_URL + "/v1/dse";
+
+// const REALTIME_API_BASE_URL =
+// 	process.env.NEXT_PUBLIC_REALTIME_API_BASE_URL + "/v1/dse";
 
 export const realtimeAxiosInstance = axios.create({
 	baseURL: REALTIME_API_BASE_URL,

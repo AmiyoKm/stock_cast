@@ -73,3 +73,27 @@ export const getMarketStatus = () => {
 
 	return { isLive: false, message: "Market Closed" };
 };
+
+export function getStartDateForTradingDays(
+	endDate: Date,
+	numberOfDays: number,
+): Date {
+	const isFridayOrSaturday = (date: Date) => {
+		const day = date.getDay();
+		return day === 5 || day === 6;
+	};
+
+	let tradingDaysCount = 0;
+	let tempDate = new Date(endDate);
+	const tradingDates: Date[] = [];
+
+	while (tradingDaysCount < numberOfDays) {
+		if (!isFridayOrSaturday(tempDate)) {
+			tradingDates.push(new Date(tempDate));
+			tradingDaysCount++;
+		}
+		tempDate.setDate(tempDate.getDate() - 1);
+	}
+
+	return tradingDates[tradingDates.length - 1];
+}
