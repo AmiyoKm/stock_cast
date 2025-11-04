@@ -4,11 +4,9 @@ import type {
 	EnvelopeStocks,
 	RealTimeResponse,
 } from "@/types/api";
-import {
-	PredictionRequest,
-	StockPredictionResponse,
-} from "@/types/prediction";
+import { PredictionRequest, StockPredictionResponse } from "@/types/prediction";
 import type { Stock, StockHistoryPoint } from "@/types/stock";
+import { getStartDateForTradingDays } from "@/lib/time";
 import { deleteAPI, fetchAPI, fetchRealTimeAPI, postAPI } from "./utils";
 import { favoriteStockType } from "@/schema/stocks";
 
@@ -49,14 +47,31 @@ export class StockAPI {
 		tradingCode,
 		nhead,
 		model,
-	}: PredictionRequest): Promise<StockPredictionResponse> {
+	}: PredictionRequest): Promise<{
+		prevDays: StockHistoryPoint[];
+		response: StockPredictionResponse;
+	}> {
 		const request: PredictionRequest = { tradingCode, nhead, model };
+
+		const endDate = new Date();
+		const startDate = getStartDateForTradingDays(endDate, nhead + 1);
+
+		const prevDays = await StockAPI.getStockHistory(
+			tradingCode,
+			startDate.toISOString().slice(0, 10),
+			endDate.toISOString().slice(0, 10),
+		);
+
+
 		const response = await postAPI<StockPredictionResponse>(
 			"/predict",
 			request,
 		);
 
-		return response;
+		return {
+			prevDays,
+			response,
+		};
 	}
 
 	static async createFavoriteStock(

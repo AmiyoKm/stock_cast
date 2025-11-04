@@ -6,11 +6,14 @@ import type {
 	PredictionPeriod,
 	StockPredictionResponse,
 } from "@/types/prediction";
+import { getPredictionData } from "@/lib/stock";
+import { StockHistoryPoint } from "@/types/stock";
 
 export function useStockPrediction(tradingCode: string, currentPrice: number) {
 	const [nhead, setNhead] = useState<PredictionPeriod>(7);
 	const [allPredictions, setAllPredictions] =
 		useState<StockPredictionResponse | null>(null);
+	const [prevDaysStock, setPrevDaysStock] = useState<StockHistoryPoint[]>([]);
 
 	const [model, setModel] =
 		useState<PredictionModelType>("StockCast/seperate");
@@ -18,7 +21,8 @@ export function useStockPrediction(tradingCode: string, currentPrice: number) {
 	const predictionMutation = useMutation({
 		mutationFn: StockAPI.getStockPrediction,
 		onSuccess: (data) => {
-			setAllPredictions(data);
+			setAllPredictions(data.response);
+			setPrevDaysStock(data.prevDays);
 		},
 	});
 
@@ -56,23 +60,28 @@ export function useStockPrediction(tradingCode: string, currentPrice: number) {
 			: "Failed to fetch predictions"
 		: null;
 
-	const getPredictionData = () => {
-		if (!allPredictions) return null;
-		const key = `${nhead}_day`;
-		return allPredictions.predictions[key];
-	};
+	const predictionData = getPredictionData(nhead, allPredictions);
 
-	const predictionData = getPredictionData();
+	const chartData: { date: string; history?: number; prediction?: number }[] =
+		prevDaysStock.map((p) => ({
+			date: p.date.slice(0, 10),
+			history: p.closep,
+		}));
 
-	const chartData = predictionData
-		? predictionData.predicted_prices.map(
-				(price: number, index: number) => ({
-					date: predictionData.dates[index],
-					price: price,
-					day: index + 1,
-				}),
-			)
-		: [];
+	if (chartData.length > 0) {
+		const lastPoint = chartData[chartData.length - 1];
+		lastPoint.prediction = lastPoint.history;
+	}
+
+	if (predictionData) {
+		const predictionPoints = predictionData.predicted_prices.map(
+			(price, index) => ({
+				date: predictionData.dates[index],
+				prediction: price,
+			}),
+		);
+		chartData.push(...predictionPoints);
+	}
 
 	const priceChange = predictionData
 		? {
