@@ -33,6 +33,7 @@ export function StockPredictionSelector({
 	const models: PredictionModelType[] = [
 		"StockCast/seperate",
 		"StockCast/unified",
+		"StockCast/gru",
 	];
 	const periods = [1, 3, 7, 15, 30];
 

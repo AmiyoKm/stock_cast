@@ -29,4 +29,4 @@ export interface PredictionRequest {
 }
 
 export type PredictionPeriod = 1 | 3 | 7 | 15 | 30;
-export type PredictionModelType = "StockCast/seperate" | "StockCast/unified";
+export type PredictionModelType = "StockCast/seperate" | "StockCast/unified" | "StockCast/gru";
